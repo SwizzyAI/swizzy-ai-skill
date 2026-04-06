@@ -19,6 +19,7 @@ import { renameController } from "@swizzyweb/swizzy-web-service-cli/commands/ren
 import { renameRouter } from "@swizzyweb/swizzy-web-service-cli/commands/rename-router";
 import { runService } from "@swizzyweb/swizzy-web-service-cli/commands/run-service";
 import { startDevServer } from "@swizzyweb/swizzy-web-service-cli/commands/dev-server";
+import { detectProject } from "@swizzyweb/swizzy-web-service-cli/scaffolding/project-detector";
 
 const server = new Server(
   {
@@ -120,6 +121,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "build_service",
       description: "Build the current Swizzy Web Service",
+      inputSchema: {
+        type: "object",
+        properties: {},
+      },
+    },
+    {
+      name: "get_project_structure",
+      description: "Get the structure of the current Swizzy project, including routers, controllers, and middleware.",
       inputSchema: {
         type: "object",
         properties: {},
@@ -250,6 +259,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         await buildService({});
         return {
           content: [{ type: "text", text: "Successfully built the service." }],
+        };
+      }
+      case "get_project_structure": {
+        const project = detectProject(process.cwd());
+        return {
+          content: [{ type: "text", text: JSON.stringify(project, null, 2) }],
         };
       }
       case "delete_controller": {

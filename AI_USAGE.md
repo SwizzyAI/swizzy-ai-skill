@@ -48,6 +48,10 @@ Rename a middleware.
 ### `build_service`
 Run `npm run build` in the current directory.
 
+### `get_project_structure`
+Get the structure of the current Swizzy project.
+Returns a JSON object detailing the service, routers, controllers, and their file paths. Use this to understand the project architecture before making changes.
+
 ### `delete_controller`
 Delete a controller and its test.
 - `name` (required): PascalCase controller name.
