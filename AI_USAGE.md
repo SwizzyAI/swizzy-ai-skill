@@ -32,6 +32,19 @@ Add a new middleware.
 - `router` (required): Parent router name.
 - `controller` (optional): Parent controller name (to attach at controller level).
 
+### `delete_middleware`
+Delete a middleware and its reference.
+- `name` (required): PascalCase middleware name.
+- `router` (required): Parent router name.
+- `controller` (optional): Parent controller name.
+
+### `rename_middleware`
+Rename a middleware.
+- `oldName` (required): Current name.
+- `newName` (required): New name.
+- `router` (required): Parent router name.
+- `controller` (optional): Parent controller name.
+
 ### `build_service`
 Run `npm run build` in the current directory.
 

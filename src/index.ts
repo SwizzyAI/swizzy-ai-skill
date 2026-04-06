@@ -10,6 +10,8 @@ import { createWebService } from "@swizzyweb/swizzy-web-service-cli/commands/cre
 import { createRouter } from "@swizzyweb/swizzy-web-service-cli/commands/create-router";
 import { createController } from "@swizzyweb/swizzy-web-service-cli/commands/create-controller";
 import { createMiddleware } from "@swizzyweb/swizzy-web-service-cli/commands/create-middleware";
+import { deleteMiddleware } from "@swizzyweb/swizzy-web-service-cli/commands/delete-middleware";
+import { renameMiddleware } from "@swizzyweb/swizzy-web-service-cli/commands/rename-middleware";
 import { buildService } from "@swizzyweb/swizzy-web-service-cli/commands/build-service";
 import { deleteController } from "@swizzyweb/swizzy-web-service-cli/commands/delete-controller";
 import { deleteRouter } from "@swizzyweb/swizzy-web-service-cli/commands/delete-router";
@@ -86,6 +88,33 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           controller: { type: "string", description: "Optional parent controller name" },
         },
         required: ["name", "router"],
+      },
+    },
+    {
+      name: "delete_middleware",
+      description: "Delete a middleware from the project",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Middleware name (PascalCase)" },
+          router: { type: "string", description: "Parent router name" },
+          controller: { type: "string", description: "Optional parent controller name" },
+        },
+        required: ["name", "router"],
+      },
+    },
+    {
+      name: "rename_middleware",
+      description: "Rename a middleware in the project",
+      inputSchema: {
+        type: "object",
+        properties: {
+          oldName: { type: "string", description: "Current middleware name" },
+          newName: { type: "string", description: "New middleware name" },
+          router: { type: "string", description: "Parent router name" },
+          controller: { type: "string", description: "Optional parent controller name" },
+        },
+        required: ["oldName", "newName", "router"],
       },
     },
     {
@@ -194,6 +223,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
         return {
           content: [{ type: "text", text: `Successfully created middleware: ${result.middlewareFilePath}. Patched: ${result.patchedFiles.join(", ")}` }],
+        };
+      }
+      case "delete_middleware": {
+        await deleteMiddleware({
+          name: args?.name as string,
+          routerName: args?.router as string,
+          controllerName: args?.controller as string,
+        });
+        return {
+          content: [{ type: "text", text: `Successfully deleted middleware ${args?.name} from ${args?.controller ? `controller ${args?.controller}` : `router ${args?.router}`}` }],
+        };
+      }
+      case "rename_middleware": {
+        await renameMiddleware({
+          oldName: args?.oldName as string,
+          newName: args?.newName as string,
+          routerName: args?.router as string,
+          controllerName: args?.controller as string,
+        });
+        return {
+          content: [{ type: "text", text: `Successfully renamed middleware ${args?.oldName} to ${args?.newName} in ${args?.controller ? `controller ${args?.controller}` : `router ${args?.router}`}` }],
         };
       }
       case "build_service": {
