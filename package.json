@@ -1,5 +1,5 @@
 {
-  "name": "@swizzyweb/swizzy-ai-tool",
+  "name": "@swizzyweb/swizzy-ai-skill",
   "version": "0.1.0",
   "description": "AI Agent tool for working with swizzy web ecosystem.",
   "keywords": [
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0",
-    "@swizzyweb/swizzy-web-service-cli": "file:../swizzy-web-service-cli"
+    "@swizzyweb/swizzy-web-service-cli": "^0.1.2"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

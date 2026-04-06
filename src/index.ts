@@ -23,7 +23,7 @@ import { detectProject } from "@swizzyweb/swizzy-web-service-cli/scaffolding/pro
 
 const server = new Server(
   {
-    name: "swizzy-ai-tool",
+    name: "swizzy-ai-skill",
     version: "0.1.0",
   },
   {

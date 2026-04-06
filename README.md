@@ -1,26 +1,26 @@
-# Swizzy AI Tool
+# Swizzy AI Skill
 
-AI Agent tool for working with the SwizzyWeb ecosystem. This package provides an **MCP (Model Context Protocol)** server that allows AI agents to scaffold, manage, and refactor Swizzy Web Service projects.
+AI Agent skill for working with the SwizzyWeb ecosystem. This package provides an **MCP (Model Context Protocol)** server that allows AI agents to scaffold, manage, and refactor Swizzy Web Service projects.
 
 ## Installation
 
-Before registering the tool, ensure you have built the project:
+Before registering the skill, ensure you have built the project:
 
 ```bash
-cd swizzy-ai-tool
+cd swizzy-ai-skill
 npm install
 npm run build
 ```
 
 ## Setup (How to get an AI to use this)
 
-To use this tool with an AI agent, you must register it as an MCP server.
+To use this skill with an AI agent, you must register it as an MCP server.
 
 ### 1. Register with Gemini CLI
 Run the following command in your terminal:
 
 ```bash
-gemini mcp add swizzy node /home/jmoney/repos/gemini/swizzyweb/code-tools/swizzy-ai-tool/dist/index.js
+gemini mcp add swizzy node /home/jmoney/repos/gemini/swizzyweb/code-tools/swizzy-ai-skill/dist/index.js
 ```
 
 ### 2. Register with Claude Desktop
@@ -31,7 +31,7 @@ Add this to your configuration file (usually `~/.config/Claude/claude_desktop_co
   "mcpServers": {
     "swizzy": {
       "command": "node",
-      "args": ["/home/jmoney/repos/gemini/swizzyweb/code-tools/swizzy-ai-tool/dist/index.js"]
+      "args": ["/home/jmoney/repos/gemini/swizzyweb/code-tools/swizzy-ai-skill/dist/index.js"]
     }
   }
 }
@@ -39,7 +39,7 @@ Add this to your configuration file (usually `~/.config/Claude/claude_desktop_co
 
 ## Usage
 
-Once registered, you can talk to your AI agent in natural language. The AI will automatically call the correct Swizzy tools.
+Once registered, you can talk to your AI agent in natural language. The AI will automatically call the correct Swizzy skill tools.
 
 ### Examples
 - **Scaffolding:** "Create a new Swizzy backend project named 'StoreManager'."
@@ -48,7 +48,7 @@ Once registered, you can talk to your AI agent in natural language. The AI will 
 - **Management:** "Show me the current project structure."
 - **Refactoring:** "Rename the 'Product' router to 'Inventory'."
 
-## Available Tools
+## Available Tools (Capabilities)
 
 | Tool | Purpose |
 | :--- | :--- |

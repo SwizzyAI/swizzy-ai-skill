@@ -1,6 +1,6 @@
-# Swizzy AI Tool - AI Documentation
+# Swizzy AI Skill - AI Documentation
 
-This tool is an MCP (Model Context Protocol) server designed to help you work with Swizzy Web Services.
+This skill is an MCP (Model Context Protocol) server designed to help you work with Swizzy Web Services.
 
 ## Available Tools
 
