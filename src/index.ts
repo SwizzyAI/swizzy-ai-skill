@@ -9,6 +9,7 @@ import {
 import { createWebService } from "@swizzyweb/swizzy-web-service-cli/commands/create-web-service";
 import { createRouter } from "@swizzyweb/swizzy-web-service-cli/commands/create-router";
 import { createController } from "@swizzyweb/swizzy-web-service-cli/commands/create-controller";
+import { createMiddleware } from "@swizzyweb/swizzy-web-service-cli/commands/create-middleware";
 import { buildService } from "@swizzyweb/swizzy-web-service-cli/commands/build-service";
 import { deleteController } from "@swizzyweb/swizzy-web-service-cli/commands/delete-controller";
 import { deleteRouter } from "@swizzyweb/swizzy-web-service-cli/commands/delete-router";
@@ -72,6 +73,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           query: { type: "boolean", default: false },
         },
         required: ["name", "action", "router"],
+      },
+    },
+    {
+      name: "create_middleware",
+      description: "Add a new Swizzy Middleware to the current project",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Middleware name (PascalCase)" },
+          router: { type: "string", description: "Parent router name" },
+          controller: { type: "string", description: "Optional parent controller name" },
+        },
+        required: ["name", "router"],
       },
     },
     {
@@ -170,6 +184,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
         return {
           content: [{ type: "text", text: `Successfully created controller: ${result.controllerFilePath}. Test: ${result.testFilePath}. Patched: ${result.patchedFiles.join(", ")}` }],
+        };
+      }
+      case "create_middleware": {
+        const result = await createMiddleware({
+          name: args?.name as string,
+          routerName: args?.router as string,
+          controllerName: args?.controller as string,
+        });
+        return {
+          content: [{ type: "text", text: `Successfully created middleware: ${result.middlewareFilePath}. Patched: ${result.patchedFiles.join(", ")}` }],
         };
       }
       case "build_service": {

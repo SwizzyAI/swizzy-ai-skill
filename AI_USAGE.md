@@ -26,6 +26,12 @@ Add a new controller to an existing router. Must be run in the root of a Swizzy 
 - `body` (optional): Boolean, set `true` for POST/PUT with typed body.
 - `query` (optional): Boolean, set `true` for GET/DELETE with typed query.
 
+### `create_middleware`
+Add a new middleware.
+- `name` (required): PascalCase middleware name.
+- `router` (required): Parent router name.
+- `controller` (optional): Parent controller name (to attach at controller level).
+
 ### `build_service`
 Run `npm run build` in the current directory.
 
