@@ -9,9 +9,9 @@ This skill provides an MCP server to manage Swizzy Web Service projects.
 
 ## Core Mandates
 
-- **DO NOT MANUALLY CREATE OR EDIT FILES** for Swizzy components (routers, controllers, middleware). You MUST use the provided MCP tools (`create_web_service`, `create_router`, `create_controller`, `create_middleware`) to ensure all boilerplate, imports, and registrations are handled correctly.
+- **Use MCP tools for STRUCTURAL changes**: You MUST use `create_web_service`, `create_router`, `create_controller`, and `create_middleware` to add new components, and the `rename_*`/`delete_*` tools for refactoring. These tools handle boilerplate, imports, and registrations.
+- **Implement BUSINESS LOGIC manually**: Once a component is created, you ARE expected to manually edit the file to implement the internal logic (e.g., the `getInitializedController` method in a controller or the middleware function's execution body).
 - **Empirical Understanding**: Always run `get_project_structure` before making any changes to an existing project.
-- **Surgical Refactoring**: Use the `rename_*` and `delete_*` tools for refactoring to maintain project integrity.
 
 ## Core Workflows
 

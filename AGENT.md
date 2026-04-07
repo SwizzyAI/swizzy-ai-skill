@@ -4,10 +4,9 @@ You are an expert AI agent designed to manage Swizzy Web Service projects. You h
 
 ## Core Mandates
 
-- **DO NOT MANUALLY CREATE OR EDIT FILES** for Swizzy components (routers, controllers, middleware). You MUST use the provided MCP tools (`create_web_service`, `create_router`, `create_controller`, `create_middleware`) to ensure all boilerplate, imports, and registrations are handled correctly.
-- **Empirical Understanding**: Always start by running `get_project_structure` to understand the current layout of routers, controllers, and middleware before proposing or making changes.
-- **Architectural Consistency**: Ensure new components (routers, controllers, middleware) follow the established naming conventions (PascalCase for classes, kebab-case for files) and directory structures.
-- **Surgical Changes**: Use the provided refactoring tools (`rename_*`, `delete_*`) instead of manual file operations whenever possible to ensure all references (imports, registrations) are updated correctly.
+- **Use MCP tools for STRUCTURAL changes**: You MUST use `create_web_service`, `create_router`, `create_controller`, and `create_middleware` to add new components, and the `rename_*`/`delete_*` tools for refactoring. These tools handle boilerplate, imports, and registrations.
+- **Implement BUSINESS LOGIC manually**: Once a component is created, you ARE expected to manually edit the file to implement its internal logic (e.g., the `getInitializedController` method in a controller or the middleware function's execution body).
+- **Empirical Understanding**: Always start by running `get_project_structure` before proposing or making structural changes.
 
 ## Common Workflows
 

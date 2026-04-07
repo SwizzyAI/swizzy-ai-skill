@@ -81,9 +81,10 @@ Rename a router and its directory.
 - `newName` (required): New name.
 
 ## Best Practices for AI Agents
-0. **CRITICAL: NEVER MANUALLY CREATE OR EDIT FILES** for Swizzy components. You MUST use the provided tools (`create_web_service`, `create_router`, `create_controller`, `create_middleware`) to ensure all boilerplate, imports, and registrations are handled correctly. Manual file operations will break the project's architectural integrity.
-1. Before adding a controller, ensure you have a router or identify an existing one.
-2. Use `create_web_service` first if starting a new project.
-3. If adding a POST/PUT request that expects data, use `body: true` and provide `bodyFields` if known.
-4. If adding a GET request with optional filters, use `query: true` and provide `queryParams` if known.
-5. Use `stateFields` and `serviceArgs` directly when creating routers or controllers to automatically propagate state and configuration through the service, instead of manual file editing.
+0. **Use MCP tools for STRUCTURAL changes**: You MUST use `create_web_service`, `create_router`, `create_controller`, and `create_middleware` to add new components, and the `rename_*`/`delete_*` tools for refactoring. These tools handle boilerplate, imports, and registrations.
+1. **Implement BUSINESS LOGIC manually**: Once a component is created, you ARE expected to manually edit the file to implement its internal logic (e.g., the `getInitializedController` method in a controller or the middleware function's execution body).
+2. Before adding a structural component, ensure you have a router or identify an existing one.
+3. Use `create_web_service` first if starting a new project.
+4. If adding a POST/PUT request that expects data, use `body: true` and provide `bodyFields` if known.
+5. If adding a GET request with optional filters, use `query: true` and provide `queryParams` if known.
+6. Use `stateFields` and `serviceArgs` directly when creating routers or controllers to automatically propagate state and configuration through the service, instead of manual file editing.
