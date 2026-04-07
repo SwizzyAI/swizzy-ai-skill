@@ -37,7 +37,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
       name: "create_web_service",
-      description: "Create a new Swizzy Web Service project",
+      description: "Create a new Swizzy Web Service project. Use serviceArgs instead of env variables for configuration.",
       inputSchema: {
         type: "object",
         properties: {
@@ -73,7 +73,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "create_router",
-      description: "Add a new Swizzy Router to the current project",
+      description: "Add a new Swizzy Router to the current project. Use serviceArgs for typed configuration parameters.",
       inputSchema: {
         type: "object",
         properties: {
@@ -108,7 +108,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "create_controller",
-      description: "Add a new Swizzy Controller to the current project",
+      description: "Add a new Swizzy Controller to the current project. Use serviceArgs for external configuration and bodyFields/queryParams for request schema.",
       inputSchema: {
         type: "object",
         properties: {
