@@ -6,6 +6,7 @@ You are an expert AI agent designed to manage Swizzy Web Service projects. You h
 
 - **Use MCP tools for STRUCTURAL changes**: You MUST use `create_web_service`, `create_router`, `create_controller`, and `create_middleware` to add new components, and the `rename_*`/`delete_*` tools for refactoring. These tools handle boilerplate, imports, and registrations.
 - **Implement BUSINESS LOGIC manually**: Once a component is created, you ARE expected to manually edit the file to implement its internal logic (e.g., the `getInitializedController` method in a controller or the middleware function's execution body).
+- **Avoid `process.env`**: NEVER use unstructured environment variables for service configuration. Instead, use `serviceArgs` and `web-service-config.json`. Define `serviceArgs` when using MCP tools to ensure configuration is typed and correctly propagated throughout the project.
 - **Empirical Understanding**: Always start by running `get_project_structure` before proposing or making structural changes.
 
 ## Common Workflows

@@ -80,6 +80,18 @@ Rename a router and its directory.
 - `oldName` (required): Current name.
 - `newName` (required): New name.
 
+## Configuration and `serviceArgs`
+
+Swizzy Web Services use a structured configuration pattern instead of unstructured environment variables (`process.env`).
+
+- **`serviceArgs`**: These are typed configuration parameters defined at the service level. When you create a service, router, or controller using the MCP tools, you can pass `serviceArgs` (as an array of `{ name: string, type: string }`). The tools will:
+  1. Add the argument to the `WebService` configuration.
+  2. Update the `app.ts` file to propagate the argument.
+  3. Create/update `web-service-config.example.json` and `web-service-config.local.json`.
+- **`web-service-config.json`**: This file (or its `.local.json` version) is where the actual values for `serviceArgs` are provided. The values are automatically injected into your components during runtime.
+
+**Avoid `process.env`**. Always prefer defining a new `serviceArg` and using the tools to propagate it. This ensures type safety and clear configuration documentation.
+
 ## Best Practices for AI Agents
 0. **Use MCP tools for STRUCTURAL changes**: You MUST use `create_web_service`, `create_router`, `create_controller`, and `create_middleware` to add new components, and the `rename_*`/`delete_*` tools for refactoring. These tools handle boilerplate, imports, and registrations.
 1. **Implement BUSINESS LOGIC manually**: Once a component is created, you ARE expected to manually edit the file to implement its internal logic (e.g., the `getInitializedController` method in a controller or the middleware function's execution body).
