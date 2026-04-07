@@ -10,12 +10,16 @@ Scaffold a new Swizzy Web Service project.
 - `type` (optional): "backend" (default) or "frontend".
 - `scope` (optional): NPM scope (e.g. "myorg").
 - `install` (optional): Set to `true` to run `npm install` after creation.
+- `stateFields` (optional): Array of `{ name: string, type: string }` to add to the service state.
+- `serviceArgs` (optional): Array of `{ name: string, type: string }` to add as service arguments.
 
 ### `create_router`
 Add a new router to the current project. Must be run in the root of a Swizzy project.
 - `name` (required): PascalCase router name.
 - `path` (required): URL path segment.
 - `standardMiddleware` (optional): Boolean, default `true`.
+- `stateFields` (optional): Array of `{ name: string, type: string }` to add to the router state.
+- `serviceArgs` (optional): Array of `{ name: string, type: string }` to add as service arguments.
 
 ### `create_controller`
 Add a new controller to an existing router. Must be run in the root of a Swizzy project.
@@ -25,6 +29,10 @@ Add a new controller to an existing router. Must be run in the root of a Swizzy 
 - `router` (required): Name of the parent router.
 - `body` (optional): Boolean, set `true` for POST/PUT with typed body.
 - `query` (optional): Boolean, set `true` for GET/DELETE with typed query.
+- `bodyFields` (optional): Array of `{ name: string, type: string }` for the request body.
+- `queryParams` (optional): Array of `{ name: string, type: string }` for query parameters.
+- `stateFields` (optional): Array of `{ name: string, type: string }` to add to the state.
+- `serviceArgs` (optional): Array of `{ name: string, type: string }` to add as service arguments.
 
 ### `create_middleware`
 Add a new middleware.
@@ -75,5 +83,6 @@ Rename a router and its directory.
 ## Best Practices for AI Agents
 1. Before adding a controller, ensure you have a router or identify an existing one.
 2. Use `create_web_service` first if starting a new project.
-3. If adding a POST/PUT request that expects data, use `body: true`.
-4. If adding a GET request with optional filters, use `query: true`.
+3. If adding a POST/PUT request that expects data, use `body: true` and provide `bodyFields` if known.
+4. If adding a GET request with optional filters, use `query: true` and provide `queryParams` if known.
+5. Use `stateFields` and `serviceArgs` directly when creating routers or controllers to automatically propagate state and configuration through the service, instead of manual file editing.

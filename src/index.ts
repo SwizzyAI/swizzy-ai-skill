@@ -45,6 +45,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           type: { type: "string", enum: ["backend", "frontend"], default: "backend" },
           scope: { type: "string", description: "NPM scope" },
           install: { type: "boolean", description: "Run npm install", default: false },
+          stateFields: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
+          serviceArgs: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
         },
         required: ["name"],
       },
@@ -58,6 +80,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           name: { type: "string", description: "Router name (PascalCase)" },
           path: { type: "string", description: "URL path segment" },
           standardMiddleware: { type: "boolean", default: true },
+          stateFields: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
+          serviceArgs: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
         },
         required: ["name", "path"],
       },
@@ -74,6 +118,50 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           router: { type: "string", description: "Parent router name" },
           body: { type: "boolean", default: false },
           query: { type: "boolean", default: false },
+          bodyFields: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
+          queryParams: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
+          stateFields: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
+          serviceArgs: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
         },
         required: ["name", "action", "router"],
       },
@@ -196,6 +284,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           type: (args?.type as "backend" | "frontend") ?? "backend",
           scope: args?.scope as string,
           install: args?.install as boolean,
+          stateFields: args?.stateFields as any,
+          serviceArgs: args?.serviceArgs as any,
+          stdio: ["ignore", "pipe", "inherit"],
         });
         return {
           content: [{ type: "text", text: `Successfully created project: ${result.packageName} at ${result.projectDir}` }],
@@ -206,6 +297,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           name: args?.name as string,
           routerPath: args?.path as string,
           includeStandardMiddleware: args?.standardMiddleware as boolean ?? true,
+          stateFields: args?.stateFields as any,
+          serviceArgs: args?.serviceArgs as any,
         });
         return {
           content: [{ type: "text", text: `Successfully created router: ${result.routerFilePath}. Patched: ${result.patchedFiles.join(", ")}` }],
@@ -219,6 +312,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           routerName: args?.router as string,
           hasBody: args?.body as boolean,
           hasQuery: args?.query as boolean,
+          bodyFields: args?.bodyFields as any,
+          queryParams: args?.queryParams as any,
+          stateFields: args?.stateFields as any,
+          serviceArgs: args?.serviceArgs as any,
         });
         return {
           content: [{ type: "text", text: `Successfully created controller: ${result.controllerFilePath}. Test: ${result.testFilePath}. Patched: ${result.patchedFiles.join(", ")}` }],
@@ -256,7 +353,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
       case "build_service": {
-        await buildService({});
+        await buildService({ stdio: ["ignore", "pipe", "inherit"] });
         return {
           content: [{ type: "text", text: "Successfully built the service." }],
         };
