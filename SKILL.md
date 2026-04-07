@@ -7,6 +7,12 @@ description: Manage Swizzy Web Service projects, including creating routers, con
 
 This skill provides an MCP server to manage Swizzy Web Service projects.
 
+## Core Mandates
+
+- **DO NOT MANUALLY CREATE OR EDIT FILES** for Swizzy components (routers, controllers, middleware). You MUST use the provided MCP tools (`create_web_service`, `create_router`, `create_controller`, `create_middleware`) to ensure all boilerplate, imports, and registrations are handled correctly.
+- **Empirical Understanding**: Always run `get_project_structure` before making any changes to an existing project.
+- **Surgical Refactoring**: Use the `rename_*` and `delete_*` tools for refactoring to maintain project integrity.
+
 ## Core Workflows
 
 1. **Inspection**: Use `get_project_structure` to understand the existing routers and controllers.
