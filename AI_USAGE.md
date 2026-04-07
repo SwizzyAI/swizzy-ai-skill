@@ -81,6 +81,7 @@ Rename a router and its directory.
 - `newName` (required): New name.
 
 ## Best Practices for AI Agents
+0. **CRITICAL: NEVER MANUALLY CREATE OR EDIT FILES** for Swizzy components. You MUST use the provided tools (`create_web_service`, `create_router`, `create_controller`, `create_middleware`) to ensure all boilerplate, imports, and registrations are handled correctly. Manual file operations will break the project's architectural integrity.
 1. Before adding a controller, ensure you have a router or identify an existing one.
 2. Use `create_web_service` first if starting a new project.
 3. If adding a POST/PUT request that expects data, use `body: true` and provide `bodyFields` if known.
