@@ -43,23 +43,24 @@ Once registered, you can talk to your AI agent in natural language. The AI will 
 
 ### Examples
 - **Scaffolding:** "Create a new Swizzy backend project named 'StoreManager'."
-- **Adding Features:** "Add a 'Product' router at path '/products' and a 'CreateProduct' POST controller inside it."
+- **Adding Features:** "Add a 'Product' router at path '/products' and a 'CreateProduct' POST controller inside it with 'name' and 'price' body fields."
 - **Middleware:** "Add an 'Auth' middleware to the 'CreateProduct' controller."
 - **Management:** "Show me the current project structure."
 - **Refactoring:** "Rename the 'Product' router to 'Inventory'."
+- **Complex Scaffolding:** "Create a new controller named 'UpdateStock' in the 'Inventory' router. It should have a 'quantity' body field and also add 'lastUpdated' to the service state."
 
 ## Available Tools (Capabilities)
 
 | Tool | Purpose |
 | :--- | :--- |
 | `get_project_structure` | Reads the current routers, controllers, and middleware. |
-| `create_web_service` | Initializes a new project from a template. |
-| `create_router` | Adds a new router file and directory. |
-| `create_controller` | Adds a controller with optional body/query validation. |
+| `create_web_service` | Initializes a new project from a template. Supports `stateFields` and `serviceArgs`. |
+| `create_router` | Adds a new router file and directory. Supports `stateFields` and `serviceArgs`. |
+| `create_controller` | Adds a controller with optional `bodyFields`, `queryParams`, `stateFields`, and `serviceArgs`. |
 | `create_middleware` | Generates middleware and attaches it to a router/controller. |
 | `rename_router` / `_controller` | Renames files and updates all internal references/imports. |
 | `delete_router` / `_controller` | Removes components and cleans up parent imports. |
-| `build_service` | Compiles the TypeScript code. |
+| `build_service` | Compiles the TypeScript code (safe for MCP use). |
 
 ## Documentation
 - **[README.md](./README.md)**: Human-readable guide (this file).
