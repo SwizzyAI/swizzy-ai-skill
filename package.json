@@ -1,6 +1,6 @@
 {
   "name": "@swizzyai/swizzy-ai-skill",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AI Agent tool for working with swizzy web ecosystem.",
   "keywords": [
     "SwizzyAI",
@@ -15,6 +15,9 @@
   "author": "Jason Gallagher",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "swizzy-ai-skill": "./dist/index.js"
+  },
   "scripts": {
     "tsc": "tsc",
     "build": "tsc",

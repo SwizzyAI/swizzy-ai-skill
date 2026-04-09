@@ -4,12 +4,16 @@ AI Agent skill for working with the SwizzyWeb ecosystem. This package provides a
 
 ## Installation
 
-Before registering the skill, ensure you have built the project:
+Install the package from the registry:
 
 ```bash
-cd swizzy-ai-skill
-npm install
-npm run build
+npm install -g @swizzyai/swizzy-ai-skill
+```
+
+Or install locally as a project dependency:
+
+```bash
+npm install @swizzyai/swizzy-ai-skill
 ```
 
 ## Setup (How to get an AI to use this)
@@ -20,7 +24,7 @@ To use this skill with an AI agent, you must register it as an MCP server.
 Run the following command in your terminal:
 
 ```bash
-gemini mcp add swizzy node /home/jmoney/repos/gemini/swizzyweb/code-tools/swizzy-ai-skill/dist/index.js
+gemini mcp add swizzy npx @swizzyai/swizzy-ai-skill
 ```
 
 ### 2. Register with Claude Desktop
@@ -30,8 +34,8 @@ Add this to your configuration file (usually `~/.config/Claude/claude_desktop_co
 {
   "mcpServers": {
     "swizzy": {
-      "command": "node",
-      "args": ["/home/jmoney/repos/gemini/swizzyweb/code-tools/swizzy-ai-skill/dist/index.js"]
+      "command": "npx",
+      "args": ["@swizzyai/swizzy-ai-skill"]
     }
   }
 }
