@@ -6,20 +6,20 @@ import {
   ListToolsRequestSchema,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
-import { createWebService } from "@swizzyweb/swizzy-web-service-cli/commands/create-web-service";
-import { createRouter } from "@swizzyweb/swizzy-web-service-cli/commands/create-router";
-import { createController } from "@swizzyweb/swizzy-web-service-cli/commands/create-controller";
-import { createMiddleware } from "@swizzyweb/swizzy-web-service-cli/commands/create-middleware";
-import { deleteMiddleware } from "@swizzyweb/swizzy-web-service-cli/commands/delete-middleware";
-import { renameMiddleware } from "@swizzyweb/swizzy-web-service-cli/commands/rename-middleware";
-import { buildService } from "@swizzyweb/swizzy-web-service-cli/commands/build-service";
-import { deleteController } from "@swizzyweb/swizzy-web-service-cli/commands/delete-controller";
-import { deleteRouter } from "@swizzyweb/swizzy-web-service-cli/commands/delete-router";
-import { renameController } from "@swizzyweb/swizzy-web-service-cli/commands/rename-controller";
-import { renameRouter } from "@swizzyweb/swizzy-web-service-cli/commands/rename-router";
-import { runService } from "@swizzyweb/swizzy-web-service-cli/commands/run-service";
-import { startDevServer } from "@swizzyweb/swizzy-web-service-cli/commands/dev-server";
-import { detectProject } from "@swizzyweb/swizzy-web-service-cli/scaffolding/project-detector";
+import { createWebService } from "@swizzyai/swizzy-web-service-cli/commands/create-web-service";
+import { createRouter } from "@swizzyai/swizzy-web-service-cli/commands/create-router";
+import { createController } from "@swizzyai/swizzy-web-service-cli/commands/create-controller";
+import { createMiddleware } from "@swizzyai/swizzy-web-service-cli/commands/create-middleware";
+import { deleteMiddleware } from "@swizzyai/swizzy-web-service-cli/commands/delete-middleware";
+import { renameMiddleware } from "@swizzyai/swizzy-web-service-cli/commands/rename-middleware";
+import { buildService } from "@swizzyai/swizzy-web-service-cli/commands/build-service";
+import { deleteController } from "@swizzyai/swizzy-web-service-cli/commands/delete-controller";
+import { deleteRouter } from "@swizzyai/swizzy-web-service-cli/commands/delete-router";
+import { renameController } from "@swizzyai/swizzy-web-service-cli/commands/rename-controller";
+import { renameRouter } from "@swizzyai/swizzy-web-service-cli/commands/rename-router";
+import { runService } from "@swizzyai/swizzy-web-service-cli/commands/run-service";
+import { startDevServer } from "@swizzyai/swizzy-web-service-cli/commands/dev-server";
+import { detectProject } from "@swizzyai/swizzy-web-service-cli/scaffolding/project-detector";
 
 const server = new Server(
   {
