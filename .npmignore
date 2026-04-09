@@ -1,0 +1,10 @@
+*.skill
+*.log
+src/
+tsconfig.json
+AGENT.md
+AI_USAGE.md
+CLAUDE.md
+DEVELOPMENT.md
+GEMINI.md
+SKILL.md
