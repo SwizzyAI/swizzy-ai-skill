@@ -1,4 +1,18 @@
 #!/usr/bin/env node
+// Copyright 2024 Jason Gallagher
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -20,12 +34,16 @@ import { renameController } from "@swizzyai/swizzy-web-service-cli/commands/rena
 import { renameRouter } from "@swizzyai/swizzy-web-service-cli/commands/rename-router";
 import { runService } from "@swizzyai/swizzy-web-service-cli/commands/run-service";
 import { startDevServer } from "@swizzyai/swizzy-web-service-cli/commands/dev-server";
+import { generateTests } from "@swizzyai/swizzy-web-service-cli/commands/generate-tests";
+import { generateSpec } from "@swizzyai/swizzy-web-service-cli/commands/generate-spec";
+import { generateSkeleton } from "@swizzyai/swizzy-web-service-cli/commands/generate-skeleton";
+import { buildEndpoints, sendRequest } from "@swizzyai/swizzy-web-service-cli/commands/request-service";
 import { detectProject } from "@swizzyai/swizzy-web-service-cli/scaffolding/project-detector";
 
 const server = new Server(
   {
     name: "swizzy-ai-skill",
-    version: "0.1.0",
+    version: "0.1.2",
   },
   {
     capabilities: {
@@ -271,6 +289,76 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["oldName", "newName"],
       },
     },
+    {
+      name: "run_service",
+      description: "Start the Swizzy Web Service. Returns the process PID. The service runs in the background.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          port: { type: "number", description: "Port to bind (defaults to service default)" },
+        },
+      },
+    },
+    {
+      name: "dev_service",
+      description: "Start the Swizzy Web Service in dev mode with TypeScript watch and auto-restart. Returns the process PID.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          port: { type: "number", description: "Port to bind (defaults to service default)" },
+        },
+      },
+    },
+    {
+      name: "generate_tests",
+      description: "Generate test stubs for all routers and controllers in the current project.",
+      inputSchema: {
+        type: "object",
+        properties: {},
+      },
+    },
+    {
+      name: "generate_spec",
+      description: "Export an OpenAPI 3.0 spec from the current project.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          output: { type: "string", description: "Output file path (default: openapi.yaml or openapi.json)" },
+          basePath: { type: "string", description: "Override API base path" },
+          serverUrl: { type: "string", description: "Embed server URL in spec" },
+          version: { type: "string", description: "API version (default: 1.0.0)" },
+          json: { type: "boolean", description: "Output JSON instead of YAML", default: false },
+        },
+      },
+    },
+    {
+      name: "generate_skeleton",
+      description: "Scaffold a new Swizzy project from an OpenAPI 3.0 spec file.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          spec: { type: "string", description: "Path to OpenAPI 3.0 spec file (JSON or YAML)" },
+          output: { type: "string", description: "Output directory (default: ./generated)" },
+          name: { type: "string", description: "Service name override" },
+          scope: { type: "string", description: "NPM scope" },
+          basePath: { type: "string", description: "API base path (default: api)" },
+        },
+        required: ["spec"],
+      },
+    },
+    {
+      name: "request",
+      description: "Send an HTTP request to a running Swizzy service. Omit endpoint to list available endpoints.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          baseUrl: { type: "string", description: "Base URL of the service (default: http://localhost:3000)" },
+          endpoint: { type: "string", description: "Endpoint label (e.g. 'GET /api/users/list'). Omit to list all." },
+          body: { type: "string", description: "JSON request body" },
+          query: { type: "string", description: "JSON query params" },
+        },
+      },
+    },
   ],
 }));
 
@@ -399,6 +487,80 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
         return {
           content: [{ type: "text", text: `Successfully renamed router ${args?.oldName} to ${args?.newName}` }],
+        };
+      }
+      case "run_service": {
+        const child = runService({ port: args?.port as number | undefined });
+        return {
+          content: [{ type: "text", text: `Service started (PID ${child.pid}). Running in background.` }],
+        };
+      }
+      case "dev_service": {
+        const cleanup = startDevServer({ port: args?.port as number | undefined });
+        return {
+          content: [{ type: "text", text: `Dev server started in background (tsc --watch + swerve). Call cleanup to stop.` }],
+        };
+      }
+      case "generate_tests": {
+        const result = generateTests({});
+        const lines = [
+          `Helper: ${result.helperFile}${result.helperSkipped ? " (skipped, already exists)" : ""}`,
+          `Created: ${result.created.length ? result.created.join(", ") : "none"}`,
+          `Skipped: ${result.skipped.length ? result.skipped.join(", ") : "none"}`,
+        ];
+        return {
+          content: [{ type: "text", text: lines.join("\n") }],
+        };
+      }
+      case "generate_spec": {
+        const result = generateSpec({
+          output: args?.output as string | undefined,
+          basePath: args?.basePath as string | undefined,
+          serverUrl: args?.serverUrl as string | undefined,
+          version: args?.version as string | undefined,
+          json: args?.json as boolean | undefined,
+        });
+        return {
+          content: [{ type: "text", text: `Spec written to ${result.outputFile} (${result.routerCount} routers, ${result.operationCount} operations)` }],
+        };
+      }
+      case "generate_skeleton": {
+        const result = generateSkeleton({
+          spec: args?.spec as string,
+          output: args?.output as string | undefined,
+          name: args?.name as string | undefined,
+          scope: args?.scope as string | undefined,
+          basePath: args?.basePath as string | undefined,
+        });
+        return {
+          content: [{ type: "text", text: `Skeleton generated at ${result.outputDir} (service: ${result.serviceName}, ${result.routerCount} routers, ${result.controllerCount} controllers)\nCreated: ${result.created.join(", ")}` }],
+        };
+      }
+      case "request": {
+        const baseUrl = (args?.baseUrl as string | undefined) ?? "http://localhost:3000";
+        const endpoints = buildEndpoints();
+
+        if (!args?.endpoint) {
+          const list = endpoints.map((e) => e.label).join("\n");
+          return {
+            content: [{ type: "text", text: `Available endpoints:\n${list}` }],
+          };
+        }
+
+        const endpoint = endpoints.find((e) => e.label === args.endpoint);
+        if (!endpoint) {
+          return {
+            content: [{ type: "text", text: `Endpoint not found: "${args.endpoint}". Available:\n${endpoints.map((e) => e.label).join("\n")}` }],
+            isError: true,
+          };
+        }
+
+        const body = args?.body ? JSON.parse(args.body as string) : undefined;
+        const query = args?.query ? JSON.parse(args.query as string) : undefined;
+
+        const result = await sendRequest({ baseUrl, endpoint, body, query });
+        return {
+          content: [{ type: "text", text: `${result.status} ${result.statusText} (${result.durationMs}ms)\n${result.body}` }],
         };
       }
       default:

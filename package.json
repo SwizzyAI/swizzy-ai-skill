@@ -1,31 +1,31 @@
 {
   "name": "@swizzyai/swizzy-ai-skill",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "AI Agent tool for working with swizzy web ecosystem.",
   "keywords": [
-    "SwizzyAI",
     "AI",
+    "SwizzyAI",
     "tool"
   ],
+  "license": "Apache-2.0",
+  "author": "Jason Gallagher",
   "repository": {
     "type": "git",
     "url": "http://bigun-1.swizzyweb.com:3972/SwizzyAI/swizzy-ai-skill.git"
   },
-  "license": "UNLICENSED",
-  "author": "Jason Gallagher",
-  "type": "module",
-  "main": "dist/index.js",
   "bin": {
     "swizzy-ai-skill": "./dist/index.js"
   },
+  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
     "tsc": "tsc",
     "build": "tsc",
-    "test": "node --test ./test"
+    "test": "tsc -p tsconfig.test.json && node --test ./dist/test/**/*.spec.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0",
-    "@swizzyai/swizzy-web-service-cli": "^0.1.2"
+    "@swizzyai/swizzy-web-service-cli": "^0.1.10"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
