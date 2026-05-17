@@ -11,7 +11,7 @@
   "author": "Jason Gallagher",
   "repository": {
     "type": "git",
-    "url": "http://bigun-1.swizzyweb.com:3972/SwizzyAI/swizzy-ai-skill.git"
+    "url": "https://github.com/SwizzyAI/swizzy-ai-skill.git"
   },
   "bin": {
     "swizzy-ai-skill": "./dist/index.js"
