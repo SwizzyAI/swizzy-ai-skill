@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { spawnSync } from "node:child_process";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -61,6 +62,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           name: { type: "string", description: "Project name (PascalCase)" },
+          cwd: { type: "string", description: "Absolute path to the directory where the project should be created (defaults to server CWD)" },
           type: { type: "string", enum: ["backend", "frontend"], default: "backend" },
           scope: { type: "string", description: "NPM scope" },
           install: { type: "boolean", description: "Run npm install", default: false },
@@ -98,6 +100,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           name: { type: "string", description: "Router name (PascalCase)" },
           path: { type: "string", description: "URL path segment" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
           standardMiddleware: { type: "boolean", default: true },
           stateFields: {
             type: "array",
@@ -133,6 +136,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           name: { type: "string", description: "Controller name (PascalCase)" },
           action: { type: "string", description: "Action name/URL segment" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
           method: { type: "string", enum: ["get", "post", "put", "delete", "patch"], default: "get" },
           router: { type: "string", description: "Parent router name" },
           body: { type: "boolean", default: false },
@@ -192,6 +196,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           name: { type: "string", description: "Middleware name (PascalCase)" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
           router: { type: "string", description: "Parent router name" },
           controller: { type: "string", description: "Optional parent controller name" },
         },
@@ -205,6 +210,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           name: { type: "string", description: "Middleware name (PascalCase)" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
           router: { type: "string", description: "Parent router name" },
           controller: { type: "string", description: "Optional parent controller name" },
         },
@@ -218,6 +224,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           oldName: { type: "string", description: "Current middleware name" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
           newName: { type: "string", description: "New middleware name" },
           router: { type: "string", description: "Parent router name" },
           controller: { type: "string", description: "Optional parent controller name" },
@@ -230,7 +237,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       description: "Build the current Swizzy Web Service",
       inputSchema: {
         type: "object",
-        properties: {},
+        properties: {
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+        },
       },
     },
     {
@@ -238,7 +247,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       description: "Get the structure of the current Swizzy project, including routers, controllers, and middleware.",
       inputSchema: {
         type: "object",
-        properties: {},
+        properties: {
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+        },
       },
     },
     {
@@ -249,6 +260,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           name: { type: "string", description: "Controller name (PascalCase)" },
           router: { type: "string", description: "Parent router name" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
         },
         required: ["name", "router"],
       },
@@ -260,6 +272,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           name: { type: "string", description: "Router name (PascalCase)" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
         },
         required: ["name"],
       },
@@ -271,6 +284,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           oldName: { type: "string", description: "Current controller name" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
           newName: { type: "string", description: "New controller name" },
           router: { type: "string", description: "Parent router name" },
         },
@@ -284,6 +298,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           oldName: { type: "string", description: "Current router name" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
           newName: { type: "string", description: "New router name" },
         },
         required: ["oldName", "newName"],
@@ -296,6 +311,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           port: { type: "number", description: "Port to bind (defaults to service default)" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
         },
       },
     },
@@ -306,6 +322,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           port: { type: "number", description: "Port to bind (defaults to service default)" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
         },
       },
     },
@@ -314,7 +331,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       description: "Generate test stubs for all routers and controllers in the current project.",
       inputSchema: {
         type: "object",
-        properties: {},
+        properties: {
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+        },
       },
     },
     {
@@ -323,6 +342,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       inputSchema: {
         type: "object",
         properties: {
+          cwd: { type: "string", description: "Absolute path to the project directory" },
           output: { type: "string", description: "Output file path (default: openapi.yaml or openapi.json)" },
           basePath: { type: "string", description: "Override API base path" },
           serverUrl: { type: "string", description: "Embed server URL in spec" },
@@ -364,6 +384,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
+  const cwd = (args?.cwd as string | undefined) ?? process.cwd();
 
   try {
     switch (name) {
@@ -375,6 +396,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           install: args?.install as boolean,
           stateFields: args?.stateFields as any,
           serviceArgs: args?.serviceArgs as any,
+          cwd: cwd,
           stdio: ["ignore", "pipe", "inherit"],
         });
         return {
@@ -388,6 +410,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           includeStandardMiddleware: args?.standardMiddleware as boolean ?? true,
           stateFields: args?.stateFields as any,
           serviceArgs: args?.serviceArgs as any,
+          cwd: cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully created router: ${result.routerFilePath}. Patched: ${result.patchedFiles.join(", ")}` }],
@@ -405,6 +428,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           queryParams: args?.queryParams as any,
           stateFields: args?.stateFields as any,
           serviceArgs: args?.serviceArgs as any,
+          cwd: cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully created controller: ${result.controllerFilePath}. Test: ${result.testFilePath}. Patched: ${result.patchedFiles.join(", ")}` }],
@@ -415,6 +439,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           name: args?.name as string,
           routerName: args?.router as string,
           controllerName: args?.controller as string,
+          cwd: cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully created middleware: ${result.middlewareFilePath}. Patched: ${result.patchedFiles.join(", ")}` }],
@@ -425,6 +450,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           name: args?.name as string,
           routerName: args?.router as string,
           controllerName: args?.controller as string,
+          cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully deleted middleware ${args?.name} from ${args?.controller ? `controller ${args?.controller}` : `router ${args?.router}`}` }],
@@ -436,19 +462,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           newName: args?.newName as string,
           routerName: args?.router as string,
           controllerName: args?.controller as string,
+          cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully renamed middleware ${args?.oldName} to ${args?.newName} in ${args?.controller ? `controller ${args?.controller}` : `router ${args?.router}`}` }],
         };
       }
       case "build_service": {
-        await buildService({ stdio: ["ignore", "pipe", "inherit"] });
+        const buildResult = spawnSync("npm", ["run", "build"], { cwd, stdio: ["ignore", "pipe", "pipe"] });
+        const buildOutput = [buildResult.stdout?.toString(), buildResult.stderr?.toString()].filter(Boolean).join("\n").trim();
+        if (buildResult.status !== 0) {
+          throw new Error(`Build failed:\n${buildOutput}`);
+        }
         return {
-          content: [{ type: "text", text: "Successfully built the service." }],
+          content: [{ type: "text", text: buildOutput ? `Build output:\n${buildOutput}` : "Successfully built the service." }],
         };
       }
       case "get_project_structure": {
-        const project = detectProject(process.cwd());
+        const project = detectProject(cwd);
         return {
           content: [{ type: "text", text: JSON.stringify(project, null, 2) }],
         };
@@ -457,6 +488,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         await deleteController({
           name: args?.name as string,
           routerName: args?.router as string,
+          cwd: cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully deleted controller ${args?.name} from router ${args?.router}` }],
@@ -465,6 +497,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "delete_router": {
         await deleteRouter({
           name: args?.name as string,
+          cwd: cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully deleted router ${args?.name}` }],
@@ -475,6 +508,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           oldName: args?.oldName as string,
           newName: args?.newName as string,
           routerName: args?.router as string,
+          cwd: cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully renamed controller ${args?.oldName} to ${args?.newName} in router ${args?.router}` }],
@@ -484,25 +518,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         await renameRouter({
           oldName: args?.oldName as string,
           newName: args?.newName as string,
+          cwd: cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully renamed router ${args?.oldName} to ${args?.newName}` }],
         };
       }
       case "run_service": {
-        const child = runService({ port: args?.port as number | undefined });
+        const child = runService({ cwd: cwd, port: args?.port as number | undefined });
         return {
           content: [{ type: "text", text: `Service started (PID ${child.pid}). Running in background.` }],
         };
       }
       case "dev_service": {
-        const cleanup = startDevServer({ port: args?.port as number | undefined });
+        const cleanup = startDevServer({ cwd: cwd, port: args?.port as number | undefined });
         return {
           content: [{ type: "text", text: `Dev server started in background (tsc --watch + swerve). Call cleanup to stop.` }],
         };
       }
       case "generate_tests": {
-        const result = generateTests({});
+        const result = generateTests({ cwd: cwd });
         const lines = [
           `Helper: ${result.helperFile}${result.helperSkipped ? " (skipped, already exists)" : ""}`,
           `Created: ${result.created.length ? result.created.join(", ") : "none"}`,
@@ -514,6 +549,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "generate_spec": {
         const result = generateSpec({
+          projectDir: cwd,
           output: args?.output as string | undefined,
           basePath: args?.basePath as string | undefined,
           serverUrl: args?.serverUrl as string | undefined,
@@ -538,7 +574,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "request": {
         const baseUrl = (args?.baseUrl as string | undefined) ?? "http://localhost:3000";
-        const endpoints = buildEndpoints();
+        const endpoints = buildEndpoints(cwd);
 
         if (!args?.endpoint) {
           const list = endpoints.map((e) => e.label).join("\n");

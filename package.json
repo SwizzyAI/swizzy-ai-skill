@@ -16,19 +16,27 @@
   "bin": {
     "swizzy-ai-skill": "./dist/index.js"
   },
+  "files": [
+    "dist/index.js",
+    "dist/index.js.map"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "tsc": "tsc",
     "build": "tsc",
-    "test": "tsc -p tsconfig.test.json && node --test ./dist/test/**/*.spec.js"
+    "test": "tsc -p tsconfig.test.json && node --test ./dist/test/**/*.spec.js",
+    "prepublishOnly": "npm test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0",
-    "@swizzyai/swizzy-web-service-cli": "^0.1.10"
+    "@swizzyai/swizzy-web-service-cli": "^0.1.12"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

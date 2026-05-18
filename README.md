@@ -74,31 +74,37 @@ Once registered, you can talk to your AI agent in natural language. The AI will 
 
 ## Available Tools (Capabilities)
 
+> **`cwd` parameter**: All tools accept an optional `cwd` string (absolute path to the project directory). Pass it whenever your project lives in a subdirectory of the MCP server's working directory — which is the typical case when Claude Code opens a parent workspace. Example: `cwd: "/home/user/workspace/my-service"`.
+
 ### Inspection
-| Tool | Purpose |
-| :--- | :--- |
-| `get_project_structure` | Reads the current routers, controllers, and middleware. |
+| Tool | Key Parameters | Purpose |
+| :--- | :--- | :--- |
+| `get_project_structure` | `cwd?` | Reads the current routers, controllers, and middleware. |
 
 ### Scaffolding
-| Tool | Purpose |
-| :--- | :--- |
-| `create_web_service` | Initializes a new project from a template. Supports `stateFields` and `serviceArgs`. |
-| `create_router` | Adds a new router file and directory. Supports `stateFields` and `serviceArgs`. |
-| `create_controller` | Adds a controller with optional `bodyFields`, `queryParams`, `stateFields`, and `serviceArgs`. |
-| `create_middleware` | Generates middleware and attaches it to a router/controller. |
+| Tool | Key Parameters | Purpose |
+| :--- | :--- | :--- |
+| `create_web_service` | `name`, `type?`, `cwd?`, `stateFields?`, `serviceArgs?`, `install?` | Initializes a new project from a template. |
+| `create_router` | `name`, `path`, `cwd?`, `stateFields?`, `serviceArgs?` | Adds a new router file and directory. |
+| `create_controller` | `name`, `action`, `router`, `method?`, `cwd?`, `bodyFields?`, `queryParams?` | Adds a controller to an existing router. |
+| `create_middleware` | `name`, `router`, `cwd?`, `controller?` | Generates middleware and attaches it to a router/controller. |
 
 ### Refactoring
-| Tool | Purpose |
-| :--- | :--- |
-| `rename_router` / `rename_controller` / `rename_middleware` | Renames files and updates all internal references/imports. |
-| `delete_router` / `delete_controller` / `delete_middleware` | Removes components and cleans up parent imports. |
+| Tool | Key Parameters | Purpose |
+| :--- | :--- | :--- |
+| `rename_router` | `oldName`, `newName`, `cwd?` | Renames router and updates all references. |
+| `rename_controller` | `oldName`, `newName`, `router`, `cwd?` | Renames controller and updates all references. |
+| `rename_middleware` | `oldName`, `newName`, `router`, `cwd?` | Renames middleware and updates all references. |
+| `delete_router` | `name`, `cwd?` | Removes router and cleans up registrations. |
+| `delete_controller` | `name`, `router`, `cwd?` | Removes controller and cleans up registrations. |
+| `delete_middleware` | `name`, `router`, `cwd?` | Removes middleware and cleans up registrations. |
 
 ### Build & Run
-| Tool | Purpose |
-| :--- | :--- |
-| `build_service` | Compiles the TypeScript project. |
-| `run_service` | Starts the service. Accepts an optional `port`. |
-| `dev_service` | Starts the service in dev mode with `tsc --watch` and auto-restart on changes. Accepts an optional `port`. |
+| Tool | Key Parameters | Purpose |
+| :--- | :--- | :--- |
+| `build_service` | `cwd?` | Compiles the TypeScript project. |
+| `run_service` | `cwd?`, `port?` | Starts the service in the background. |
+| `dev_service` | `cwd?`, `port?` | Starts in dev mode with `tsc --watch` and auto-restart. |
 
 ### OpenAPI
 | Tool | Purpose |
