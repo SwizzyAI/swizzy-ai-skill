@@ -33,6 +33,11 @@ Use `get_project_structure` to visualize the service. This tool identifies:
 ### 4. Verification
 - Use `build_service` after structural changes to ensure the project still compiles correctly.
 
+### 5. Running & Stopping
+- Use `run_service` to start the service in the background. Pass `port` to bind to a specific port.
+- Use `dev_service` to start in watch mode — `tsc --watch` recompiles on file changes, swerve restarts automatically.
+- Use `stop_service` with the same `port` (and optionally `cwd`) to stop either. When stopping a dev server, passing `cwd` ensures the `tsc --watch` process is also killed.
+
 ## Best Practices
 - Always verify you are in the root of a Swizzy project before running tools other than `create_web_service`.
 - If a project doesn't exist, use `create_web_service` first.

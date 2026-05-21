@@ -31,3 +31,10 @@ This skill provides the following MCP tools:
 - `rename_router` / `rename_controller` / `rename_middleware`: Refactor components.
 - `delete_router` / `delete_controller` / `delete_middleware`: Remove components.
 - `build_service`: Compile the project.
+- `run_service`: Start the service in the background.
+- `dev_service`: Start in dev mode with `tsc --watch` and auto-restart.
+- `stop_service`: Stop a running service or dev server by port and/or project directory.
+- `generate_tests`: Generate test stubs for all routers and controllers.
+- `generate_spec`: Export an OpenAPI 3.0 spec from the project.
+- `generate_skeleton`: Scaffold a new project from an OpenAPI spec.
+- `request`: Send HTTP requests to a running service or list its endpoints.

@@ -35,6 +35,7 @@ import { renameController } from "@swizzyai/swizzy-web-service-cli/commands/rena
 import { renameRouter } from "@swizzyai/swizzy-web-service-cli/commands/rename-router";
 import { runService } from "@swizzyai/swizzy-web-service-cli/commands/run-service";
 import { startDevServer } from "@swizzyai/swizzy-web-service-cli/commands/dev-server";
+import { stopService } from "@swizzyai/swizzy-web-service-cli/commands/stop-service";
 import { generateTests } from "@swizzyai/swizzy-web-service-cli/commands/generate-tests";
 import { generateSpec } from "@swizzyai/swizzy-web-service-cli/commands/generate-spec";
 import { generateSkeleton } from "@swizzyai/swizzy-web-service-cli/commands/generate-skeleton";
@@ -44,7 +45,7 @@ import { detectProject } from "@swizzyai/swizzy-web-service-cli/scaffolding/proj
 const server = new Server(
   {
     name: "swizzy-ai-skill",
-    version: "0.1.2",
+    version: "0.1.3",
   },
   {
     capabilities: {
@@ -367,6 +368,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
+      name: "stop_service",
+      description: "Stop a running Swizzy Web Service or dev server. Finds the process by port and/or kills the tsc --watch process by project directory.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          port: { type: "number", description: "Port the service is running on" },
+          cwd: { type: "string", description: "Absolute path to the project directory (required to stop a dev server's tsc --watch process)" },
+        },
+      },
+    },
+    {
       name: "request",
       description: "Send an HTTP request to a running Swizzy service. Omit endpoint to list available endpoints.",
       inputSchema: {
@@ -522,6 +534,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
         return {
           content: [{ type: "text", text: `Successfully renamed router ${args?.oldName} to ${args?.newName}` }],
+        };
+      }
+      case "stop_service": {
+        const result = stopService({
+          port: args?.port as number | undefined,
+          cwd: args?.cwd ? cwd : undefined,
+        });
+        const msg = result.killed.length
+          ? `Stopped ${result.killed.length} process(es) (PIDs: ${result.killed.join(", ")})`
+          : "No running service found on the specified port or project directory.";
+        return {
+          content: [{ type: "text", text: msg }],
         };
       }
       case "run_service": {

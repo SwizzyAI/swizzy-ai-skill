@@ -1,10 +1,13 @@
 {
   "name": "@swizzyai/swizzy-ai-skill",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "AI Agent tool for working with swizzy web ecosystem.",
   "keywords": [
     "AI",
     "SwizzyAI",
+    "mcp",
+    "skill",
+    "swizzyweb",
     "tool"
   ],
   "license": "Apache-2.0",
@@ -30,7 +33,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0",
-    "@swizzyai/swizzy-web-service-cli": "^0.1.12"
+    "@swizzyai/swizzy-web-service-cli": "^0.1.13"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

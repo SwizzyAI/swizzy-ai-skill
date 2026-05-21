@@ -202,6 +202,7 @@ describe("MCP server — tools/list", () => {
       "rename_router",
       "run_service",
       "dev_service",
+      "stop_service",
       "generate_tests",
       "generate_spec",
       "generate_skeleton",
@@ -404,5 +405,34 @@ describe("MCP server — dev_service", () => {
     assert.equal(res.result.isError, undefined);
     const text: string = res.result.content[0].text;
     assert.ok(text.toLowerCase().includes("dev server"), `Unexpected response: ${text}`);
+  });
+});
+
+describe("MCP server — stop_service", () => {
+  let proc: ChildProcessWithoutNullStreams;
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "swizzy-skill-stop-"));
+    proc = await spawnServer(tmpDir);
+  });
+
+  afterEach(() => {
+    proc.kill();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("reports no process found when port is not in use", async () => {
+    const res = await callTool(proc, 12, "stop_service", { port: 19999 });
+    assert.equal(res.result.isError, undefined);
+    const text: string = res.result.content[0].text;
+    assert.ok(text.includes("No running service found"), `Unexpected response: ${text}`);
+  });
+
+  it("reports no process found when no args given", async () => {
+    const res = await callTool(proc, 13, "stop_service", {});
+    assert.equal(res.result.isError, undefined);
+    const text: string = res.result.content[0].text;
+    assert.ok(text.includes("No running service found"), `Unexpected response: ${text}`);
   });
 });

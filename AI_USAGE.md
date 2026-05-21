@@ -54,7 +54,23 @@ Rename a middleware.
 - `controller` (optional): Parent controller name.
 
 ### `build_service`
-Run `npm run build` in the current directory.
+Run `npm run build` in the current directory (handles both `tsc` and webpack for frontend services).
+
+### `run_service`
+Start the compiled service in the background using `swerve`.
+- `port` (optional): Port to bind. Defaults to the port in `web-service-config.local.json`.
+- Returns the PID of the spawned process.
+
+### `dev_service`
+Start the service in development mode. Runs `tsc --watch` (recompiles on file changes) alongside `swerve`, which auto-restarts when `dist/` changes.
+- `port` (optional): Port to bind.
+- Both `tsc` and `swerve` binaries are resolved from the project's own `node_modules`, so `npm install` must have been run first (or pass `install: true` to `create_web_service`).
+
+### `stop_service`
+Stop a running service or dev server.
+- `port` (optional): Port the service is listening on. Used to locate and kill the `swerve` process.
+- `cwd` (optional): Absolute path to the project directory. When provided, also finds and kills any `tsc --watch` process associated with the project — necessary for stopping a dev server cleanly.
+- Pass both `port` and `cwd` when stopping a dev server. Port alone is sufficient for `run_service`.
 
 ### `get_project_structure`
 Get the structure of the current Swizzy project.
@@ -79,6 +95,34 @@ Rename a controller, its classes, and its test file.
 Rename a router and its directory.
 - `oldName` (required): Current name.
 - `newName` (required): New name.
+
+### `generate_tests`
+Generate test stub files for all routers and controllers that don't already have one.
+- Creates a test helper (`test/helpers/create-<service>-test-app.ts`) if it doesn't exist.
+- Skips any spec file that already exists (safe to re-run).
+
+### `generate_spec`
+Export an OpenAPI 3.0 spec from the current project by reading router/controller metadata.
+- `output` (optional): Output file path. Defaults to `openapi.yaml` (or `openapi.json` if `json: true`).
+- `basePath` (optional): Override the API base path (default: derived from the service).
+- `serverUrl` (optional): Embed a server URL in the spec.
+- `version` (optional): API version string (default: `1.0.0`).
+- `json` (optional): Output JSON instead of YAML.
+
+### `generate_skeleton`
+Scaffold a new Swizzy project from an OpenAPI 3.0 spec file.
+- `spec` (required): Absolute path to a JSON or YAML OpenAPI spec.
+- `output` (optional): Output directory (default: `./generated`).
+- `name` (optional): Service name override.
+- `scope` (optional): NPM scope.
+- `basePath` (optional): API base path (default: `api`).
+
+### `request`
+Send an HTTP request to a running service or list its available endpoints.
+- `baseUrl` (optional): Base URL of the service (default: `http://localhost:3000`).
+- `endpoint` (optional): Endpoint label as shown by the listing, e.g. `GET /api/items/list`. Omit to list all available endpoints.
+- `body` (optional): JSON string of the request body.
+- `query` (optional): JSON string of query parameters.
 
 ## Configuration and `serviceArgs`
 

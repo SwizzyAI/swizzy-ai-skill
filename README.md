@@ -70,6 +70,7 @@ Once registered, you can talk to your AI agent in natural language. The AI will 
 - **Skeleton:** "Scaffold a new project from my openapi.yaml spec."
 - **Testing:** "Generate test stubs for all controllers."
 - **Running:** "Start the service on port 4000."
+- **Stopping:** "Stop the service running on port 4000."
 - **Requests:** "Send a POST to the CreateProduct endpoint with name 'Widget' and price 9.99."
 
 ## Available Tools (Capabilities)
@@ -105,6 +106,7 @@ Once registered, you can talk to your AI agent in natural language. The AI will 
 | `build_service` | `cwd?` | Compiles the TypeScript project. |
 | `run_service` | `cwd?`, `port?` | Starts the service in the background. |
 | `dev_service` | `cwd?`, `port?` | Starts in dev mode with `tsc --watch` and auto-restart. |
+| `stop_service` | `port?`, `cwd?` | Stops a running service or dev server by port and/or project directory. |
 
 ### OpenAPI
 | Tool | Purpose |
