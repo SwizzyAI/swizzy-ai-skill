@@ -384,6 +384,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       inputSchema: {
         type: "object",
         properties: {
+          cwd: { type: "string", description: "Absolute path to the project directory" },
           baseUrl: { type: "string", description: "Base URL of the service (default: http://localhost:3000)" },
           endpoint: { type: "string", description: "Endpoint label (e.g. 'GET /api/users/list'). Omit to list all." },
           body: { type: "string", description: "JSON request body" },
