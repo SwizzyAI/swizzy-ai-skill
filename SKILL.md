@@ -9,32 +9,30 @@ This skill provides an MCP server to manage Swizzy Web Service projects.
 
 ## Core Mandates
 
-- **Use MCP tools for STRUCTURAL changes**: You MUST use `create_web_service`, `create_router`, `create_controller`, and `create_middleware` to add new components, and the `rename_*`/`delete_*` tools for refactoring. These tools handle boilerplate, imports, and registrations.
-- **Implement BUSINESS LOGIC manually**: Once a component is created, you ARE expected to manually edit the file to implement the internal logic (e.g., the `getInitializedController` method in a controller or the middleware function's execution body).
-- **Empirical Understanding**: Always run `get_project_structure` before making any changes to an existing project.
+- **Use MCP tools for STRUCTURAL changes**: You MUST use `create_web_service`, `create_router`, `create_controller`, and `create_middleware` to add new components, and the `rename_*`/`delete_*` tools for refactoring.
+- **Implement BUSINESS LOGIC manually**: Once a component is created, manually edit the file to implement internal logic.
+- **Avoid `process.env`**: Use `serviceArgs` and `web-service-config.json` instead.
+- **Prefer `manage_state` and `update_controller_params`**: Use these tools to evolve existing architectures (handles propagation).
+- **Empirical Understanding**: Always run `get_project_structure` before making any changes.
 
 ## Core Workflows
 
-1. **Inspection**: Use `get_project_structure` to understand the existing routers and controllers.
-2. **Scaffolding**: Use `create_web_service` for new projects, or `create_router`/`create_controller` for features.
-3. **Middleware**: Use `create_middleware` to add logic to routers or controllers.
-4. **Refactoring**: Use `rename_*` or `delete_*` tools for maintenance.
+1. **Inspection**: Use `get_project_structure`, `list_configs`, and `read_config`.
+2. **Scaffolding**: Use `create_web_service`, `create_router`, `create_controller` (supports body+query).
+3. **Evolution**: Use `manage_state` for state propagation and `update_controller_params` for request fields.
+4. **Configuration**: Use `add_service_arg`, `generate_config`, and `upsert_stack`.
+5. **Refactoring**: Use `rename_*` or `delete_*` tools.
 
 ## Tools (MCP)
 
-This skill provides the following MCP tools:
-- `get_project_structure`: Analyze project components.
-- `create_web_service`: Scaffold new projects.
-- `create_router`: Add new routers.
-- `create_controller`: Add new controllers.
-- `create_middleware`: Add middleware.
-- `rename_router` / `rename_controller` / `rename_middleware`: Refactor components.
-- `delete_router` / `delete_controller` / `delete_middleware`: Remove components.
-- `build_service`: Compile the project.
-- `run_service`: Start the service in the background.
-- `dev_service`: Start in dev mode with `tsc --watch` and auto-restart.
-- `stop_service`: Stop a running service or dev server by port and/or project directory.
-- `generate_tests`: Generate test stubs for all routers and controllers.
-- `generate_spec`: Export an OpenAPI 3.0 spec from the project.
-- `generate_skeleton`: Scaffold a new project from an OpenAPI spec.
-- `request`: Send HTTP requests to a running service or list its endpoints.
+This skill provides 29 MCP tools, including:
+- `get_project_structure`, `list_configs`, `read_config`
+- `create_web_service`, `create_router`, `create_controller`, `create_middleware`
+- `manage_state`, `update_controller_params`
+- `add_service_arg`, `update_service_arg`, `delete_service_arg`
+- `generate_config`, `upsert_stack`, `remove_from_stack`
+- `rename_router` / `rename_controller` / `rename_middleware`
+- `delete_router` / `delete_controller` / `delete_middleware`
+- `build_service`, `run_service`, `dev_service`, `stop_service`
+- `generate_tests`, `generate_spec`, `generate_skeleton`
+- `request`

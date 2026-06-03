@@ -129,6 +129,14 @@ function createMinimalProject(dir: string) {
     }),
   );
   fs.writeFileSync(path.join(dir, "src", "web-service.ts"), MINIMAL_WEB_SERVICE);
+  fs.writeFileSync(path.join(dir, "src", "app.ts"), `
+export interface GetAppWebServiceProps {
+  serviceArgs: {};
+}
+export async function getWebservice(props) {
+  const state = {};
+}
+`);
 }
 
 // ---------------------------------------------------------------------------
@@ -206,6 +214,16 @@ describe("MCP server — tools/list", () => {
       "generate_tests",
       "generate_spec",
       "generate_skeleton",
+      "generate_config",
+      "upsert_stack",
+      "list_configs",
+      "read_config",
+      "remove_from_stack",
+      "add_service_arg",
+      "update_service_arg",
+      "delete_service_arg",
+      "update_controller_params",
+      "manage_state",
       "request",
     ];
 
@@ -434,5 +452,69 @@ describe("MCP server — stop_service", () => {
     assert.equal(res.result.isError, undefined);
     const text: string = res.result.content[0].text;
     assert.ok(text.includes("No running service found"), `Unexpected response: ${text}`);
+  });
+});
+
+describe("MCP server — Configuration & Argument Tools", () => {
+  let proc: ChildProcessWithoutNullStreams;
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "swizzy-skill-conf-"));
+    createMinimalProject(tmpDir);
+    proc = await spawnServer(tmpDir);
+  });
+
+  afterEach(() => {
+    proc.kill();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("generate_config creates a config file", async () => {
+    const res = await callTool(proc, 14, "generate_config", { cwd: tmpDir });
+    assert.equal(res.result.isError, undefined);
+    assert.ok(fs.existsSync(path.join(tmpDir, "web-service-config.json")));
+  });
+
+  it("upsert_stack creates a multi-service config", async () => {
+    const res = await callTool(proc, 15, "upsert_stack", {
+      cwd: tmpDir,
+      services: [{ className: "Ext", location: "ext-pkg" }]
+    });
+    assert.equal(res.result.isError, undefined);
+    const config = JSON.parse(fs.readFileSync(path.join(tmpDir, "web-service-config.json"), "utf-8"));
+    assert.ok(config.services.Ext);
+  });
+
+  it("add_service_arg patches app.ts and configs", async () => {
+    const res = await callTool(proc, 16, "add_service_arg", {
+      cwd: tmpDir,
+      name: "myArg",
+      type: "string",
+      default: "val"
+    });
+    assert.equal(res.result.isError, undefined);
+    const app = fs.readFileSync(path.join(tmpDir, "src", "app.ts"), "utf-8");
+    assert.ok(app.includes("myArg?: string;"));
+  });
+
+  it("manage_state propagates a new field", async () => {
+    const res = await callTool(proc, 17, "manage_state", {
+      cwd: tmpDir,
+      action: "add",
+      level: "service",
+      name: "globalState",
+      type: "boolean"
+    });
+    assert.equal(res.result.isError, undefined);
+    const service = fs.readFileSync(path.join(tmpDir, "src", "web-service.ts"), "utf-8");
+    assert.ok(service.includes("globalState: boolean;"));
+  });
+
+  it("list_configs finds the config files", async () => {
+    fs.writeFileSync(path.join(tmpDir, "web-service-config.json"), "{}");
+    const res = await callTool(proc, 18, "list_configs", { cwd: tmpDir });
+    assert.equal(res.result.isError, undefined);
+    assert.ok(res.result.content[0].text.includes("web-service-config.json"));
   });
 });

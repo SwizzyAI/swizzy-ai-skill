@@ -39,6 +39,16 @@ import { stopService } from "@swizzyai/swizzy-web-service-cli/commands/stop-serv
 import { generateTests } from "@swizzyai/swizzy-web-service-cli/commands/generate-tests";
 import { generateSpec } from "@swizzyai/swizzy-web-service-cli/commands/generate-spec";
 import { generateSkeleton } from "@swizzyai/swizzy-web-service-cli/commands/generate-skeleton";
+import { generateConfig } from "@swizzyai/swizzy-web-service-cli/commands/generate-config";
+import { upsertStack } from "@swizzyai/swizzy-web-service-cli/commands/upsert-stack";
+import { removeFromStack } from "@swizzyai/swizzy-web-service-cli/commands/remove-from-stack";
+import { listConfigs } from "@swizzyai/swizzy-web-service-cli/commands/list-configs";
+import { readConfig } from "@swizzyai/swizzy-web-service-cli/commands/read-config";
+import { addServiceArg } from "@swizzyai/swizzy-web-service-cli/commands/add-service-arg";
+import { updateServiceArg } from "@swizzyai/swizzy-web-service-cli/commands/update-service-arg";
+import { deleteServiceArg } from "@swizzyai/swizzy-web-service-cli/commands/delete-service-arg";
+import { updateControllerParams } from "@swizzyai/swizzy-web-service-cli/commands/update-controller-params";
+import { manageState } from "@swizzyai/swizzy-web-service-cli/commands/manage-state";
 import { buildEndpoints, sendRequest } from "@swizzyai/swizzy-web-service-cli/commands/request-service";
 import { detectProject } from "@swizzyai/swizzy-web-service-cli/scaffolding/project-detector";
 
@@ -368,6 +378,168 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
+      name: "generate_config",
+      description: "Generate web-service-config.json for a single project (using its packageName).",
+      inputSchema: {
+        type: "object",
+        properties: {
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+          force: { type: "boolean", description: "Overwrite existing config files", default: false },
+        },
+      },
+    },
+    {
+      name: "upsert_stack",
+      description: "Create or update a stack configuration combining multiple services.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          cwd: { type: "string", description: "Directory where the web-service-config.json should be created/updated" },
+          services: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                className: { type: "string", description: "Service class name (optional for local paths, auto-detected)" },
+                location: { type: "string", description: "Local path (e.g. ./backend) or NPM package (e.g. @swizzyweb/proxy)" },
+                options: { type: "object", description: "Extra configuration options for this service" },
+              },
+              required: ["location"],
+            },
+            description: "List of services to include in the stack",
+          },
+        },
+        required: ["services"],
+      },
+    },
+    {
+      name: "list_configs",
+      description: "List all web-service-config*.json files in the workspace.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          cwd: { type: "string", description: "Base directory to search from" },
+        },
+      },
+    },
+    {
+      name: "read_config",
+      description: "Read and parse a web-service-config.json file.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          path: { type: "string", description: "Path to the config file" },
+        },
+        required: ["path"],
+      },
+    },
+    {
+      name: "remove_from_stack",
+      description: "Delete a service definition from a stack configuration.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          serviceName: { type: "string", description: "Name of the service class to remove" },
+          cwd: { type: "string", description: "Directory containing the stack config" },
+        },
+        required: ["serviceName"],
+      },
+    },
+    {
+      name: "add_service_arg",
+      description: "Add a typed service argument to app.ts and configuration files.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Argument name (camelCase)" },
+          type: { type: "string", description: "TypeScript type (string, number, boolean, etc.)" },
+          default: { type: "string", description: "Default value for config files" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+        },
+        required: ["name", "type"],
+      },
+    },
+    {
+      name: "update_service_arg",
+      description: "Update an existing service argument (type or default value).",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Argument name (camelCase)" },
+          type: { type: "string", description: "New TypeScript type (optional)" },
+          default: { type: "string", description: "New default value for config files (optional)" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+        },
+        required: ["name"],
+      },
+    },
+    {
+      name: "delete_service_arg",
+      description: "Delete a service argument from app.ts and configuration files.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Argument name to delete" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+        },
+        required: ["name"],
+      },
+    },
+    {
+      name: "update_controller_params",
+      description: "Update request body or query parameters for an existing controller.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          router: { type: "string", description: "Parent router name" },
+          controller: { type: "string", description: "Controller name" },
+          action: { type: "string", enum: ["upsert", "delete"], default: "upsert" },
+          bodyFields: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
+          queryParams: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: { type: "string" },
+              },
+              required: ["name", "type"],
+            },
+          },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+        },
+        required: ["router", "controller"],
+      },
+    },
+    {
+      name: "manage_state",
+      description: "Manage state properties with automatic upward propagation (Controller -> Router -> WebService).",
+      inputSchema: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["add", "update", "delete"] },
+          level: { type: "string", enum: ["controller", "router", "service"] },
+          name: { type: "string", description: "Property name (camelCase)" },
+          router: { type: "string", description: "Router name (required for controller/router level)" },
+          controller: { type: "string", description: "Controller name (required for controller level)" },
+          type: { type: "string", description: "TypeScript type (required for add/update)" },
+          default: { type: "string", description: "Default value for initialization in app.ts" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+        },
+        required: ["action", "level", "name"],
+      },
+    },
+    {
       name: "stop_service",
       description: "Stop a running Swizzy Web Service or dev server. Finds the process by port and/or kills the tsc --watch process by project directory.",
       inputSchema: {
@@ -595,6 +767,117 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
         return {
           content: [{ type: "text", text: `Skeleton generated at ${result.outputDir} (service: ${result.serviceName}, ${result.routerCount} routers, ${result.controllerCount} controllers)\nCreated: ${result.created.join(", ")}` }],
+        };
+      }
+      case "generate_config": {
+        const result = await generateConfig({
+          cwd: (args?.cwd as string) ?? cwd,
+          force: args?.force as boolean,
+        });
+        return {
+          content: [{ type: "text", text: `Generated config for ${result.serviceName} (${result.packageName}) at ${result.configPath}` }],
+        };
+      }
+      case "upsert_stack": {
+        const result = await upsertStack({
+          cwd: (args?.cwd as string) ?? cwd,
+          services: args?.services as any[],
+        });
+        return {
+          content: [{ type: "text", text: `Updated stack config at ${result.configPath}` }],
+        };
+      }
+      case "list_configs": {
+        const result = listConfigs({
+          cwd: (args?.cwd as string) ?? cwd,
+        });
+        return {
+          content: [{ type: "text", text: `Found config files:\n${result.files.join("\n")}` }],
+        };
+      }
+      case "read_config": {
+        const result = readConfig({
+          path: args?.path as string,
+        });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.config, null, 2) }],
+        };
+      }
+      case "remove_from_stack": {
+        const result = await removeFromStack({
+          serviceName: args?.serviceName as string,
+          cwd: (args?.cwd as string) ?? cwd,
+        });
+        return {
+          content: [{ type: "text", text: result.message }],
+        };
+      }
+      case "add_service_arg": {
+        const result = await addServiceArg({
+          name: args?.name as string,
+          type: args?.type as string,
+          defaultValue: args?.default,
+          cwd: (args?.cwd as string) ?? cwd,
+        });
+        const msg = `Added argument ${result.argName} to ${result.serviceName}.\n` +
+          (result.appPatched ? "Patched src/app.ts.\n" : "") +
+          "Updated configuration files.";
+        return {
+          content: [{ type: "text", text: msg }],
+        };
+      }
+      case "update_service_arg": {
+        const result = await updateServiceArg({
+          name: args?.name as string,
+          type: args?.type as string,
+          defaultValue: args?.default,
+          cwd: (args?.cwd as string) ?? cwd,
+        });
+        const msg = `Updated argument ${result.argName} in ${result.serviceName}.\n` +
+          (result.appPatched ? "Patched src/app.ts.\n" : "") +
+          (result.configUpdated ? "Updated configuration files." : "");
+        return {
+          content: [{ type: "text", text: msg }],
+        };
+      }
+      case "delete_service_arg": {
+        const result = await deleteServiceArg({
+          name: args?.name as string,
+          cwd: (args?.cwd as string) ?? cwd,
+        });
+        const msg = `Deleted argument ${result.argName} from ${result.serviceName}.\n` +
+          (result.appPatched ? "Patched src/app.ts.\n" : "") +
+          "Updated configuration files.";
+        return {
+          content: [{ type: "text", text: msg }],
+        };
+      }
+      case "update_controller_params": {
+        const result = await updateControllerParams({
+          routerName: args?.router as string,
+          controllerName: args?.controller as string,
+          action: (args?.action as "upsert" | "delete") ?? "upsert",
+          bodyFields: args?.bodyFields as any,
+          queryParams: args?.queryParams as any,
+          cwd: (args?.cwd as string) ?? cwd,
+        });
+        return {
+          content: [{ type: "text", text: `Updated parameters for controller ${result.controllerName} at ${result.filePath}` }],
+        };
+      }
+      case "manage_state": {
+        const result = await manageState({
+          action: args?.action as any,
+          targetLevel: args?.level as any,
+          name: args?.name as string,
+          routerName: args?.router as string,
+          controllerName: args?.controller as string,
+          type: args?.type as string,
+          defaultValue: args?.default as string,
+          cwd: (args?.cwd as string) ?? cwd,
+        });
+        return {
+          content: [{ type: "text", text: `Successfully performed ${args?.action} on ${args?.name} at ${args?.level} level.\nPatched files: ${result.patchedFiles.join(", ")}` }],
         };
       }
       case "request": {

@@ -63,6 +63,10 @@ Once registered, you can talk to your AI agent in natural language. The AI will 
 - **Scaffolding:** "Create a new Swizzy backend project named 'StoreManager'."
 - **Adding Features:** "Add a 'Product' router at path '/products' and a 'CreateProduct' POST controller inside it with 'name' and 'price' body fields."
 - **Middleware:** "Add an 'Auth' middleware to the 'CreateProduct' controller."
+- **Evolution:** "Add 'inventoryCount: number' to the service state with a default of 0."
+- **Evolution:** "Add a 'description' body field to the 'CreateProduct' controller."
+- **Configuration:** "Add a 'databaseUrl' service argument."
+- **Stacks:** "Create a stack configuration with this project and my-proxy-web-service."
 - **Management:** "Show me the current project structure."
 - **Refactoring:** "Rename the 'Product' router to 'Inventory'."
 - **Complex Scaffolding:** "Create a new controller named 'UpdateStock' in the 'Inventory' router. It should have a 'quantity' body field and also add 'lastUpdated' to the service state."
@@ -77,18 +81,32 @@ Once registered, you can talk to your AI agent in natural language. The AI will 
 
 > **`cwd` parameter**: All tools accept an optional `cwd` string (absolute path to the project directory). Pass it whenever your project lives in a subdirectory of the MCP server's working directory — which is the typical case when Claude Code opens a parent workspace. Example: `cwd: "/home/user/workspace/my-service"`.
 
-### Inspection
+### Inspection & Configuration
 | Tool | Key Parameters | Purpose |
 | :--- | :--- | :--- |
 | `get_project_structure` | `cwd?` | Reads the current routers, controllers, and middleware. |
+| `generate_config` | `cwd?`, `force?` | Generates a baseline `web-service-config.json`. |
+| `upsert_stack` | `services`, `cwd?` | Composes multi-service stack configurations. |
+| `list_configs` | `cwd?` | Discovers configuration files in the workspace. |
+| `read_config` | `path` | Reads and parses a configuration file. |
+| `remove_from_stack` | `serviceName`, `cwd?` | Removes a service definition from a stack. |
 
 ### Scaffolding
 | Tool | Key Parameters | Purpose |
 | :--- | :--- | :--- |
-| `create_web_service` | `name`, `type?`, `cwd?`, `stateFields?`, `serviceArgs?`, `install?` | Initializes a new project from a template. |
-| `create_router` | `name`, `path`, `cwd?`, `stateFields?`, `serviceArgs?` | Adds a new router file and directory. |
-| `create_controller` | `name`, `action`, `router`, `method?`, `cwd?`, `bodyFields?`, `queryParams?` | Adds a controller to an existing router. |
-| `create_middleware` | `name`, `router`, `cwd?`, `controller?` | Generates middleware and attaches it to a router/controller. |
+| `create_web_service` | `name`, `type?`, `cwd?`, `stateFields?`, `serviceArgs?`, `install?` | Initializes a new project. |
+| `create_router` | `name`, `path`, `cwd?`, `stateFields?`, `serviceArgs?` | Adds a new router. |
+| `create_controller` | `name`, `action`, `router`, `method?`, `cwd?`, `bodyFields?`, `queryParams?` | Adds a controller (supports body + query). |
+| `create_middleware` | `name`, `router`, `cwd?`, `controller?` | Generates and attaches middleware. |
+
+### Evolution (State & Params)
+| Tool | Key Parameters | Purpose |
+| :--- | :--- | :--- |
+| `manage_state` | `action`, `level`, `name`, `type?`, `default?`, `cwd?` | Manages state with **upward propagation**. |
+| `update_controller_params` | `router`, `controller`, `action?`, `bodyFields?`, `queryParams?` | CRUD for body/query fields. |
+| `add_service_arg` | `name`, `type`, `default?`, `cwd?` | Adds a typed service argument. |
+| `update_service_arg` | `name`, `type?`, `default?`, `cwd?` | Updates an existing service argument. |
+| `delete_service_arg` | `name`, `cwd?` | Removes a service argument. |
 
 ### Refactoring
 | Tool | Key Parameters | Purpose |

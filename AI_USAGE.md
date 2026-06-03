@@ -117,6 +117,70 @@ Scaffold a new Swizzy project from an OpenAPI 3.0 spec file.
 - `scope` (optional): NPM scope.
 - `basePath` (optional): API base path (default: `api`).
 
+### `generate_config`
+Generate web-service-config.json for a single project (using its packageName).
+- `cwd` (optional): Absolute path to the project directory.
+- `force` (optional): Overwrite existing config files (default: `false`).
+
+### `upsert_stack`
+Create or update a stack configuration combining multiple services.
+- `cwd` (optional): Directory where the web-service-config.json should be created/updated.
+- `services` (required): Array of service definitions:
+    - `location` (required): Local path (e.g. `./backend`) or NPM package (e.g. `@swizzyweb/proxy`).
+    - `className` (optional): Service class name (auto-detected for local paths).
+    - `options` (optional): Extra configuration options for this service (e.g. `{ "port": 3001 }`).
+
+### `list_configs`
+List all web-service-config*.json files in the workspace.
+- `cwd` (optional): Base directory to search from.
+
+### `read_config`
+Read and parse a web-service-config.json file.
+- `path` (required): Path to the config file.
+
+### `remove_from_stack`
+Delete a service definition from a stack configuration.
+- `serviceName` (required): Name of the service class to remove.
+- `cwd` (optional): Directory containing the stack config.
+
+### `add_service_arg`
+Add a typed service argument to app.ts and configuration files. This automatically propagates the argument through the service and updates all `web-service-config*.json` files.
+- `name` (required): Argument name (camelCase).
+- `type` (required): TypeScript type (string, number, boolean, etc.).
+- `default` (optional): Default value for config files.
+- `cwd` (optional): Absolute path to the project directory.
+
+### `update_service_arg`
+Update an existing service argument's type or default value.
+- `name` (required): Argument name (camelCase).
+- `type` (optional): New TypeScript type.
+- `default` (optional): New default value for config files.
+- `cwd` (optional): Absolute path to the project directory.
+
+### `delete_service_arg`
+Delete a service argument from app.ts and configuration files.
+- `name` (required): Argument name to delete.
+- `cwd` (optional): Absolute path to the project directory.
+
+### `update_controller_params`
+Update request body or query parameters for an existing controller.
+- `router` (required): Parent router name.
+- `controller` (required): Controller name.
+- `bodyFields` (optional): Array of `{ name: string, type: string }`.
+- `queryParams` (optional): Array of `{ name: string, type: string }`.
+- `cwd` (optional): Absolute path to the project directory.
+
+### `manage_state`
+Manage state properties with automatic upward propagation (Controller -> Router -> WebService -> app.ts).
+- `action` (required): `add`, `update`, or `delete`.
+- `level` (required): `controller`, `router`, or `service`.
+- `name` (required): Property name (camelCase).
+- `router` (required for controller/router level): Router name.
+- `controller` (required for controller level): Controller name.
+- `type` (required for add/update): TypeScript type.
+- `default` (optional): Default initialization value in `app.ts`.
+- `cwd` (optional): Absolute path to the project directory.
+
 ### `request`
 Send an HTTP request to a running service or list its available endpoints.
 - `baseUrl` (optional): Base URL of the service (default: `http://localhost:3000`).
