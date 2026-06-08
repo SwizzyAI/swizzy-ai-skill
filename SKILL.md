@@ -11,6 +11,7 @@ This skill provides an MCP server to manage Swizzy Web Service projects.
 
 - **Use MCP tools for STRUCTURAL changes**: You MUST use `create_web_service`, `create_router`, `create_controller`, and `create_middleware` to add new components, and the `rename_*`/`delete_*` tools for refactoring.
 - **Set BUSINESS LOGIC through the tools, never by hand-editing the file**: Pass it via `create_controller`/`create_middleware`'s `implementation` param, or via `update_controller_implementation`/`update_middleware_implementation` for an existing component. Direct file edits have clobbered the generated state/request interfaces around the method body — these tools patch only the body and validate syntax before writing.
+- **Frontend vs Backend**: Pass `type="frontend"` to `create_web_service` for UI-first projects. Frontend services have a `react/` directory for React components and a `src/` directory for the Node.js server. Use `write_file` to write React components in `react/`, then call `build_service` to bundle.
 - **Avoid `process.env`**: Use `serviceArgs` and `web-service-config.json` instead.
 - **Prefer `manage_state` and `update_controller_params`**: Use these tools to evolve existing architectures (handles propagation).
 - **Empirical Understanding**: Always run `get_project_structure` before making any changes.
@@ -26,6 +27,7 @@ This skill provides an MCP server to manage Swizzy Web Service projects.
 ## Tools (MCP)
 
 This skill provides 31 MCP tools, including:
+
 - `get_project_structure`, `list_configs`, `read_config`
 - `create_web_service`, `create_router`, `create_controller`, `create_middleware`
 - `manage_state`, `update_controller_params`, `update_controller_implementation`, `update_middleware_implementation`
