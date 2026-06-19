@@ -223,8 +223,12 @@ describe("MCP server — tools/list", () => {
       "update_service_arg",
       "delete_service_arg",
       "update_controller_params",
+      "update_controller_implementation",
+      "update_middleware_implementation",
       "manage_state",
       "request",
+      "view_logs",
+      "add_jsdoc",
     ];
 
     for (const name of expected) {
@@ -516,5 +520,209 @@ describe("MCP server — Configuration & Argument Tools", () => {
     const res = await callTool(proc, 18, "list_configs", { cwd: tmpDir });
     assert.equal(res.result.isError, undefined);
     assert.ok(res.result.content[0].text.includes("web-service-config.json"));
+  });
+});
+
+describe("MCP server — update_controller_implementation", () => {
+  let proc: ChildProcessWithoutNullStreams;
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "swizzy-skill-uci-"));
+    createMinimalProject(tmpDir);
+    proc = await spawnServer(tmpDir);
+  });
+
+  afterEach(() => {
+    proc.kill();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("replaces the getInitializedController body without touching the rest of the file", async () => {
+    const routerRes = await callTool(proc, 19, "create_router", { name: "Widget", path: "widgets", cwd: tmpDir });
+    assert.equal(routerRes.result.isError, undefined);
+
+    const controllerRes = await callTool(proc, 20, "create_controller", {
+      name: "List",
+      action: "list",
+      router: "Widget",
+      cwd: tmpDir,
+    });
+    assert.equal(controllerRes.result.isError, undefined);
+    const controllerFilePath = path.join(tmpDir, "src", "routers", "WidgetRouter", "controllers", "list-controller.ts");
+    assert.ok(fs.existsSync(controllerFilePath));
+    const beforeSource = fs.readFileSync(controllerFilePath, "utf-8");
+    assert.ok(beforeSource.includes("res.json({});"));
+
+    const updateRes = await callTool(proc, 21, "update_controller_implementation", {
+      router: "Widget",
+      controller: "List",
+      cwd: tmpDir,
+      implementation: `return async function (req: Request, res: Response) {\n  res.json({ marker: "updated" });\n};`,
+    });
+    assert.equal(updateRes.result.isError, undefined);
+    const text: string = updateRes.result.content[0].text;
+    assert.ok(text.includes("Successfully updated implementation for controller ListController"), `Unexpected response: ${text}`);
+
+    const afterSource = fs.readFileSync(controllerFilePath, "utf-8");
+    assert.ok(afterSource.includes('marker: "updated"'));
+    assert.ok(!afterSource.includes("res.json({});"));
+    // Surrounding generated scaffolding (state/props interfaces) must survive untouched.
+    assert.ok(afterSource.includes("ListControllerState"));
+    assert.ok(afterSource.includes("ListControllerProps"));
+  });
+
+  it("errors when the controller does not exist", async () => {
+    await callTool(proc, 22, "create_router", { name: "Widget", path: "widgets", cwd: tmpDir });
+    const res = await callTool(proc, 23, "update_controller_implementation", {
+      router: "Widget",
+      controller: "NoSuchController",
+      cwd: tmpDir,
+      implementation: `return async function (req: Request, res: Response) { res.json({}); };`,
+    });
+    assert.ok(res.result.isError === true);
+  });
+});
+
+describe("MCP server — update_middleware_implementation", () => {
+  let proc: ChildProcessWithoutNullStreams;
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "swizzy-skill-umi-"));
+    createMinimalProject(tmpDir);
+    proc = await spawnServer(tmpDir);
+  });
+
+  afterEach(() => {
+    proc.kill();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("replaces a middleware's handler body without touching the rest of the file", async () => {
+    const routerRes = await callTool(proc, 24, "create_router", { name: "Widget", path: "widgets", cwd: tmpDir });
+    assert.equal(routerRes.result.isError, undefined);
+
+    const middlewareRes = await callTool(proc, 25, "create_middleware", {
+      name: "Auth",
+      router: "Widget",
+      cwd: tmpDir,
+    });
+    assert.equal(middlewareRes.result.isError, undefined);
+    const middlewareFilePath = path.join(tmpDir, "src", "routers", "WidgetRouter", "middleware", "auth-middleware.ts");
+    assert.ok(fs.existsSync(middlewareFilePath));
+    const beforeSource = fs.readFileSync(middlewareFilePath, "utf-8");
+    assert.ok(beforeSource.includes("next();"));
+
+    const updateRes = await callTool(proc, 26, "update_middleware_implementation", {
+      router: "Widget",
+      middleware: "Auth",
+      cwd: tmpDir,
+      implementation: `return function (req: Request, res: Response, next: NextFunction) {\n  res.locals.marker = "updated";\n  next();\n};`,
+    });
+    assert.equal(updateRes.result.isError, undefined);
+    const text: string = updateRes.result.content[0].text;
+    assert.ok(text.includes("Successfully updated implementation for middleware Auth"), `Unexpected response: ${text}`);
+
+    const afterSource = fs.readFileSync(middlewareFilePath, "utf-8");
+    assert.ok(afterSource.includes('res.locals.marker = "updated";'));
+    assert.ok(afterSource.includes("SwizzyMiddlewareProps"));
+  });
+
+  it("errors when the middleware does not exist", async () => {
+    await callTool(proc, 27, "create_router", { name: "Widget", path: "widgets", cwd: tmpDir });
+    const res = await callTool(proc, 28, "update_middleware_implementation", {
+      router: "Widget",
+      middleware: "NoSuchMiddleware",
+      cwd: tmpDir,
+      implementation: `return function (req: Request, res: Response, next: NextFunction) { next(); };`,
+    });
+    assert.ok(res.result.isError === true);
+  });
+});
+
+describe("MCP server — view_logs", () => {
+  let proc: ChildProcessWithoutNullStreams;
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "swizzy-skill-logs-"));
+    proc = await spawnServer(tmpDir);
+  });
+
+  afterEach(() => {
+    proc.kill();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("reports a missing logs directory", async () => {
+    const res = await callTool(proc, 29, "view_logs", { cwd: tmpDir });
+    assert.equal(res.result.isError, undefined);
+    const text: string = res.result.content[0].text;
+    assert.ok(text.includes("Logs directory not found"), `Unexpected response: ${text}`);
+  });
+
+  it("returns the most recent lines from a log file", async () => {
+    fs.mkdirSync(path.join(tmpDir, "logs"));
+    const lines = Array.from({ length: 10 }, (_, i) => `log line ${i}`);
+    fs.writeFileSync(path.join(tmpDir, "logs", "service.log"), lines.join("\n") + "\n");
+
+    const res = await callTool(proc, 30, "view_logs", { cwd: tmpDir, lines: 3 });
+    assert.equal(res.result.isError, undefined);
+    const text: string = res.result.content[0].text;
+    assert.ok(text.includes("log line 9"));
+    assert.ok(text.includes("log line 7"));
+    assert.ok(!text.includes("log line 6"));
+  });
+});
+
+describe("MCP server — add_jsdoc", () => {
+  let proc: ChildProcessWithoutNullStreams;
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "swizzy-skill-jsdoc-"));
+    createMinimalProject(tmpDir);
+    proc = await spawnServer(tmpDir);
+  });
+
+  afterEach(() => {
+    proc.kill();
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("patches router and controller files with JSDoc", async () => {
+    await callTool(proc, 31, "create_router", { name: "Widget", path: "widgets", cwd: tmpDir });
+    await callTool(proc, 32, "create_controller", { name: "List", action: "list", router: "Widget", cwd: tmpDir });
+
+    const res = await callTool(proc, 33, "add_jsdoc", { cwd: tmpDir });
+    assert.equal(res.result.isError, undefined);
+    const text: string = res.result.content[0].text;
+    assert.ok(text.includes("Patched"), `Unexpected response: ${text}`);
+
+    const routerFile = path.join(tmpDir, "src", "routers", "WidgetRouter", "widget-router.ts");
+    const controllerFile = path.join(tmpDir, "src", "routers", "WidgetRouter", "controllers", "list-controller.ts");
+    assert.ok(fs.readFileSync(routerFile, "utf-8").includes("/**"), "Router file missing JSDoc");
+    assert.ok(fs.readFileSync(controllerFile, "utf-8").includes("/**"), "Controller file missing JSDoc");
+  });
+
+  it("scopes to a specific router when router param is passed", async () => {
+    await callTool(proc, 34, "create_router", { name: "Widget", path: "widgets", cwd: tmpDir });
+    await callTool(proc, 35, "create_controller", { name: "List", action: "list", router: "Widget", cwd: tmpDir });
+
+    const res = await callTool(proc, 36, "add_jsdoc", { cwd: tmpDir, router: "Widget" });
+    assert.equal(res.result.isError, undefined);
+    const text: string = res.result.content[0].text;
+    assert.ok(text.includes("Patched"), `Unexpected response: ${text}`);
+  });
+
+  it("returns an error for a non-swizzy project", async () => {
+    const bareDir = fs.mkdtempSync(path.join(os.tmpdir(), "swizzy-bare-"));
+    try {
+      const res = await callTool(proc, 37, "add_jsdoc", { cwd: bareDir });
+      assert.ok(res.result.isError === true, "Expected an error for non-swizzy project");
+    } finally {
+      fs.rmSync(bareDir, { recursive: true, force: true });
+    }
   });
 });

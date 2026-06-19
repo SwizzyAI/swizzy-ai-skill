@@ -96,14 +96,16 @@ Once registered, you can talk to your AI agent in natural language. The AI will 
 | :--- | :--- | :--- |
 | `create_web_service` | `name`, `type?`, `cwd?`, `stateFields?`, `serviceArgs?`, `install?` | Initializes a new project. |
 | `create_router` | `name`, `path`, `cwd?`, `stateFields?`, `serviceArgs?` | Adds a new router. |
-| `create_controller` | `name`, `action`, `router`, `method?`, `cwd?`, `bodyFields?`, `queryParams?` | Adds a controller (supports body + query). |
-| `create_middleware` | `name`, `router`, `cwd?`, `controller?` | Generates and attaches middleware. |
+| `create_controller` | `name`, `action`, `router`, `method?`, `cwd?`, `bodyFields?`, `queryParams?`, `implementation?`, `imports?` | Adds a controller (supports body + query + business logic). |
+| `create_middleware` | `name`, `router`, `cwd?`, `controller?`, `implementation?`, `imports?` | Generates and attaches middleware. |
 
 ### Evolution (State & Params)
 | Tool | Key Parameters | Purpose |
 | :--- | :--- | :--- |
 | `manage_state` | `action`, `level`, `name`, `type?`, `default?`, `cwd?` | Manages state with **upward propagation**. |
 | `update_controller_params` | `router`, `controller`, `action?`, `bodyFields?`, `queryParams?` | CRUD for body/query fields. |
+| `update_controller_implementation` | `router`, `controller`, `implementation`, `imports?`, `cwd?` | Replaces the `getInitializedController` body. **Use this instead of editing the controller file directly.** |
+| `update_middleware_implementation` | `router`, `middleware`, `implementation`, `imports?`, `cwd?` | Replaces a middleware's handler body. **Use this instead of editing the middleware file directly.** |
 | `add_service_arg` | `name`, `type`, `default?`, `cwd?` | Adds a typed service argument. |
 | `update_service_arg` | `name`, `type?`, `default?`, `cwd?` | Updates an existing service argument. |
 | `delete_service_arg` | `name`, `cwd?` | Removes a service argument. |
@@ -125,11 +127,12 @@ Once registered, you can talk to your AI agent in natural language. The AI will 
 | `run_service` | `cwd?`, `port?` | Starts the service in the background. |
 | `dev_service` | `cwd?`, `port?` | Starts in dev mode with `tsc --watch` and auto-restart. |
 | `stop_service` | `port?`, `cwd?` | Stops a running service or dev server by port and/or project directory. |
+| `view_logs` | `cwd?`, `lines?` | View the most recent logs for a running service or stack. |
 
 ### OpenAPI
 | Tool | Purpose |
 | :--- | :--- |
-| `generate_spec` | Exports an OpenAPI 3.0 spec from the current project. Accepts `output`, `basePath`, `serverUrl`, `version`, and `json` (for JSON output). |
+| `generate_spec` | Exports an OpenAPI 3.0 spec. Accepts `output`, `basePath`, `serverUrl`, `version`, `json`, `clientPackage`, `clientPackageName`, `clientOutput`. |
 | `generate_skeleton` | Scaffolds a new project from an OpenAPI 3.0 spec file. Requires `spec` (file path). Accepts `output`, `name`, `scope`, and `basePath`. |
 
 ### Testing & Requests

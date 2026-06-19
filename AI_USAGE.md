@@ -33,12 +33,32 @@ Add a new controller to an existing router. Must be run in the root of a Swizzy 
 - `queryParams` (optional): Array of `{ name: string, type: string }` for query parameters.
 - `stateFields` (optional): Array of `{ name: string, type: string }` to add to the state.
 - `serviceArgs` (optional): Array of `{ name: string, type: string }` to add as service arguments.
+- `implementation` (optional): Replacement body for `getInitializedController`, set at creation time. Prefer this over editing the controller file directly — direct edits risk clobbering the generated state/request interfaces.
+- `imports` (optional): Array of additional import statements the `implementation` needs.
 
 ### `create_middleware`
 Add a new middleware.
 - `name` (required): PascalCase middleware name.
 - `router` (required): Parent router name.
 - `controller` (optional): Parent controller name (to attach at controller level).
+- `implementation` (optional): Replacement body for the middleware factory function, set at creation time. Prefer this over editing the middleware file directly.
+- `imports` (optional): Array of additional import statements the `implementation` needs.
+
+### `update_controller_implementation`
+Replace the `getInitializedController` body of an existing controller. ALWAYS use this instead of directly editing the controller file — direct edits risk clobbering the generated state/request interfaces around it.
+- `router` (required): Parent router name.
+- `controller` (required): Controller name.
+- `implementation` (required): Replacement body for `getInitializedController`.
+- `imports` (optional): Array of additional import statements the `implementation` needs.
+- `cwd` (optional): Absolute path to the project directory.
+
+### `update_middleware_implementation`
+Replace a middleware's handler body. ALWAYS use this instead of directly editing the middleware file.
+- `router` (required): Parent router name.
+- `middleware` (required): Middleware name.
+- `implementation` (required): Replacement body for the middleware factory function.
+- `imports` (optional): Array of additional import statements the `implementation` needs.
+- `cwd` (optional): Absolute path to the project directory.
 
 ### `delete_middleware`
 Delete a middleware and its reference.
@@ -72,6 +92,11 @@ Stop a running service or dev server.
 - `cwd` (optional): Absolute path to the project directory. When provided, also finds and kills any `tsc --watch` process associated with the project — necessary for stopping a dev server cleanly.
 - Pass both `port` and `cwd` when stopping a dev server. Port alone is sufficient for `run_service`.
 
+### `view_logs`
+View the most recent logs for a running Swizzy web service or stack.
+- `cwd` (optional): Absolute path to the project directory.
+- `lines` (optional): Number of lines to show (default 100).
+
 ### `get_project_structure`
 Get the structure of the current Swizzy project.
 Returns a JSON object detailing the service, routers, controllers, and their file paths. Use this to understand the project architecture before making changes.
@@ -96,9 +121,17 @@ Rename a router and its directory.
 - `oldName` (required): Current name.
 - `newName` (required): New name.
 
+### `add_jsdoc`
+Add JSDoc comments to routers and controllers in the current project.
+- `router` (optional): Target a specific router by PascalCase name. Omit to patch all routers.
+- `controller` (optional): Target a specific controller (requires `router`). Omit to patch all controllers in the router.
+- `cwd` (optional): Absolute path to the project directory.
+- Safe to re-run — already-documented symbols are left untouched.
+
 ### `generate_tests`
 Generate test stub files for all routers and controllers that don't already have one.
 - Creates a test helper (`test/helpers/create-<service>-test-app.ts`) if it doesn't exist.
+- Automatically adds `@swizzyai/swizzy-web-service-test-framework` as a devDependency if absent.
 - Skips any spec file that already exists (safe to re-run).
 
 ### `generate_spec`
@@ -108,6 +141,9 @@ Export an OpenAPI 3.0 spec from the current project by reading router/controller
 - `serverUrl` (optional): Embed a server URL in the spec.
 - `version` (optional): API version string (default: `1.0.0`).
 - `json` (optional): Output JSON instead of YAML.
+- `clientPackage` (optional): Set to `true` to also generate a Node.js client npm package alongside the spec.
+- `clientPackageName` (optional): Override the auto-generated client npm package name.
+- `clientOutput` (optional): Directory to output the client package.
 
 ### `generate_skeleton`
 Scaffold a new Swizzy project from an OpenAPI 3.0 spec file.
@@ -201,10 +237,15 @@ Swizzy Web Services use a structured configuration pattern instead of unstructur
 **Avoid `process.env`**. Always prefer defining a new `serviceArg` and using the tools to propagate it. This ensures type safety and clear configuration documentation.
 
 ## Best Practices for AI Agents
-0. **Use MCP tools for STRUCTURAL changes**: You MUST use `create_web_service`, `create_router`, `create_controller`, and `create_middleware` to add new components, and the `rename_*`/`delete_*` tools for refactoring. These tools handle boilerplate, imports, and registrations.
-1. **Implement BUSINESS LOGIC manually**: Once a component is created, you ARE expected to manually edit the file to implement its internal logic (e.g., the `getInitializedController` method in a controller or the middleware function's execution body).
-2. Before adding a structural component, ensure you have a router or identify an existing one.
-3. Use `create_web_service` first if starting a new project.
-4. If adding a POST/PUT request that expects data, use `body: true` and provide `bodyFields` if known.
-5. If adding a GET request with optional filters, use `query: true` and provide `queryParams` if known.
-6. Use `stateFields` and `serviceArgs` directly when creating routers or controllers to automatically propagate state and configuration through the service, instead of manual file editing.
+
+0. **Use MCP tools for ALL structural changes**: Never hand-edit generated files. `create_*`, `rename_*`, and `delete_*` tools handle imports, registrations, and boilerplate automatically.
+1. **Set business logic ONLY through the tools**: Pass `implementation` at creation time (`create_controller`, `create_middleware`) or update it later with `update_controller_implementation` / `update_middleware_implementation`. Direct file edits have historically clobbered state interfaces and class scaffolding — the tools patch only the method body and validate TypeScript syntax before writing.
+2. **Call `get_project_structure` before any structural change**: Use the returned class names verbatim as `router`/`controller` parameters — never guess or derive them from filenames.
+3. **Always pass `cwd`**: Omitting it defaults to the MCP server's working directory, not the project you're working on.
+4. **PascalCase all names**: `name`, `router`, `controller`, `middleware` parameters all expect PascalCase (e.g. `UserProfile`, not `user-profile` or `userProfile`).
+5. **`implementation` is the function body only**: Write only the inner body — not the function signature or enclosing class method. The tool wraps it.
+6. **Match body/query flags to fields**: If passing `bodyFields`, set `body: true`. If passing `queryParams`, set `query: true`. Mismatches produce controllers without the correct middleware.
+7. **Use `stateFields` and `serviceArgs` at creation time**: These propagate state and configuration through the service automatically — don't patch the files manually afterward.
+8. **`stateFields` types must be valid TypeScript**: Use `unknown[]` not `array`, `Record<string, unknown>` not `object`.
+9. **Build before running**: Call `build_service` after structural changes before calling `run_service` or `dev_service`.
+10. **Never use `process.env`**: Always use `serviceArgs` and `web-service-config.json` for configuration.

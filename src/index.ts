@@ -48,8 +48,12 @@ import { addServiceArg } from "@swizzyai/swizzy-web-service-cli/commands/add-ser
 import { updateServiceArg } from "@swizzyai/swizzy-web-service-cli/commands/update-service-arg";
 import { deleteServiceArg } from "@swizzyai/swizzy-web-service-cli/commands/delete-service-arg";
 import { updateControllerParams } from "@swizzyai/swizzy-web-service-cli/commands/update-controller-params";
+import { updateControllerImplementation } from "@swizzyai/swizzy-web-service-cli/commands/update-controller-implementation";
+import { updateMiddlewareImplementation } from "@swizzyai/swizzy-web-service-cli/commands/update-middleware-implementation";
 import { manageState } from "@swizzyai/swizzy-web-service-cli/commands/manage-state";
 import { buildEndpoints, sendRequest } from "@swizzyai/swizzy-web-service-cli/commands/request-service";
+import { viewLogs } from "@swizzyai/swizzy-web-service-cli/commands/view-logs";
+import { addJsDoc } from "@swizzyai/swizzy-web-service-cli/commands/add-jsdoc";
 import { detectProject } from "@swizzyai/swizzy-web-service-cli/scaffolding/project-detector";
 
 const server = new Server(
@@ -196,6 +200,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
               required: ["name", "type"],
             },
           },
+          implementation: {
+            type: "string",
+            description: "Replacement body for getInitializedController, set at creation time. Prefer this over editing the controller file directly — direct edits risk clobbering the generated state/request interfaces.",
+          },
+          imports: {
+            type: "array",
+            items: { type: "string" },
+            description: "Additional import statements the implementation needs",
+          },
         },
         required: ["name", "action", "router"],
       },
@@ -210,8 +223,55 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           cwd: { type: "string", description: "Absolute path to the project directory" },
           router: { type: "string", description: "Parent router name" },
           controller: { type: "string", description: "Optional parent controller name" },
+          implementation: {
+            type: "string",
+            description: "Replacement body for the middleware factory function, set at creation time. Prefer this over editing the middleware file directly.",
+          },
+          imports: {
+            type: "array",
+            items: { type: "string" },
+            description: "Additional import statements the implementation needs",
+          },
         },
         required: ["name", "router"],
+      },
+    },
+    {
+      name: "update_controller_implementation",
+      description: "Replace the getInitializedController body of an existing controller. ALWAYS use this (instead of directly editing the controller file) to set or change business logic — direct file edits risk clobbering the generated state/request interfaces around it.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          router: { type: "string", description: "Parent router name" },
+          controller: { type: "string", description: "Controller name" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+          implementation: { type: "string", description: "Replacement body for getInitializedController" },
+          imports: {
+            type: "array",
+            items: { type: "string" },
+            description: "Additional import statements the implementation needs",
+          },
+        },
+        required: ["router", "controller", "implementation"],
+      },
+    },
+    {
+      name: "update_middleware_implementation",
+      description: "Replace a middleware's handler body. ALWAYS use this (instead of directly editing the middleware file) to set or change its logic.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          router: { type: "string", description: "Parent router name" },
+          middleware: { type: "string", description: "Middleware name" },
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+          implementation: { type: "string", description: "Replacement body for the middleware factory function" },
+          imports: {
+            type: "array",
+            items: { type: "string" },
+            description: "Additional import statements the implementation needs",
+          },
+        },
+        required: ["router", "middleware", "implementation"],
       },
     },
     {
@@ -359,6 +419,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           serverUrl: { type: "string", description: "Embed server URL in spec" },
           version: { type: "string", description: "API version (default: 1.0.0)" },
           json: { type: "boolean", description: "Output JSON instead of YAML", default: false },
+          clientPackage: { type: "boolean", description: "Generate a Node.js client npm package", default: false },
+          clientPackageName: { type: "string", description: "Override the auto-generated client npm package name" },
+          clientOutput: { type: "string", description: "Directory to output the client package" },
         },
       },
     },
@@ -564,6 +627,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
       },
     },
+    {
+      name: "view_logs",
+      description: "View the most recent logs for a running Swizzy web service or stack.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+          lines: { type: "number", description: "Number of lines to show (default 100)" },
+        },
+      },
+    },
+    {
+      name: "add_jsdoc",
+      description: "Add JSDoc comments to routers and controllers in the current project. Targets the whole project by default; scope to a specific router or controller with the optional params.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          cwd: { type: "string", description: "Absolute path to the project directory" },
+          router: { type: "string", description: "Target a specific router (PascalCase, e.g. Message). Omit to target all routers." },
+          controller: { type: "string", description: "Target a specific controller (requires router). Omit to target all controllers in the router." },
+        },
+      },
+    },
   ],
 }));
 
@@ -613,6 +699,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           queryParams: args?.queryParams as any,
           stateFields: args?.stateFields as any,
           serviceArgs: args?.serviceArgs as any,
+          implementation: args?.implementation as string | undefined,
+          imports: args?.imports as string[] | undefined,
           cwd: cwd,
         });
         return {
@@ -624,10 +712,36 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           name: args?.name as string,
           routerName: args?.router as string,
           controllerName: args?.controller as string,
+          implementation: args?.implementation as string | undefined,
+          imports: args?.imports as string[] | undefined,
           cwd: cwd,
         });
         return {
           content: [{ type: "text", text: `Successfully created middleware: ${result.middlewareFilePath}. Patched: ${result.patchedFiles.join(", ")}` }],
+        };
+      }
+      case "update_controller_implementation": {
+        const result = await updateControllerImplementation({
+          routerName: args?.router as string,
+          controllerName: args?.controller as string,
+          implementation: args?.implementation as string,
+          imports: args?.imports as string[] | undefined,
+          cwd,
+        });
+        return {
+          content: [{ type: "text", text: `Successfully updated implementation for controller ${result.controllerName} at ${result.filePath}` }],
+        };
+      }
+      case "update_middleware_implementation": {
+        const result = await updateMiddlewareImplementation({
+          routerName: args?.router as string,
+          middlewareName: args?.middleware as string,
+          implementation: args?.implementation as string,
+          imports: args?.imports as string[] | undefined,
+          cwd,
+        });
+        return {
+          content: [{ type: "text", text: `Successfully updated implementation for middleware ${result.middlewareName} at ${result.filePath}` }],
         };
       }
       case "delete_middleware": {
@@ -752,9 +866,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           serverUrl: args?.serverUrl as string | undefined,
           version: args?.version as string | undefined,
           json: args?.json as boolean | undefined,
+          clientPackage: args?.clientPackage as boolean | undefined,
+          clientPackageName: args?.clientPackageName as string | undefined,
+          clientOutput: args?.clientOutput as string | undefined,
         });
+        const clientMsg = result.clientDir ? `\nClient package generated at: ${result.clientDir}` : "";
         return {
-          content: [{ type: "text", text: `Spec written to ${result.outputFile} (${result.routerCount} routers, ${result.operationCount} operations)` }],
+          content: [{ type: "text", text: `Spec written to ${result.outputFile} (${result.routerCount} routers, ${result.operationCount} operations)${clientMsg}` }],
         };
       }
       case "generate_skeleton": {
@@ -905,6 +1023,29 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const result = await sendRequest({ baseUrl, endpoint, body, query });
         return {
           content: [{ type: "text", text: `${result.status} ${result.statusText} (${result.durationMs}ms)\n${result.body}` }],
+        };
+      }
+      case "view_logs": {
+        const result = await viewLogs({
+          cwd: cwd,
+          lines: args?.lines as number | undefined,
+          follow: false,
+        });
+        return {
+          content: [{ type: "text", text: result }],
+        };
+      }
+      case "add_jsdoc": {
+        const result = addJsDoc({
+          cwd,
+          routerName: args?.router as string | undefined,
+          controllerName: args?.controller as string | undefined,
+        });
+        const msg = result.patchedFiles.length
+          ? `Patched ${result.patchedFiles.length} file(s):\n${result.patchedFiles.join("\n")}`
+          : "No files needed patching.";
+        return {
+          content: [{ type: "text", text: msg }],
         };
       }
       default:
