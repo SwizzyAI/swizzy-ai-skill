@@ -54,6 +54,8 @@ import { manageState } from "@swizzyai/swizzy-web-service-cli/commands/manage-st
 import { buildEndpoints, sendRequest } from "@swizzyai/swizzy-web-service-cli/commands/request-service";
 import { viewLogs } from "@swizzyai/swizzy-web-service-cli/commands/view-logs";
 import { addJsDoc } from "@swizzyai/swizzy-web-service-cli/commands/add-jsdoc";
+import { initializeProjectStack } from "@swizzyai/swizzy-web-service-cli/commands/initialize-project-stack";
+import { listProjectServices } from "@swizzyai/swizzy-web-service-cli/commands/list-project-services";
 import { detectProject } from "@swizzyai/swizzy-web-service-cli/scaffolding/project-detector";
 
 const server = new Server(
@@ -442,7 +444,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "generate_config",
-      description: "Generate web-service-config.json for a single project (using its packageName).",
+      description: "Generate web-service-config.json for a single Swizzy project at cwd (uses its packageName). For multi-service stacks, use upsert_stack instead.",
       inputSchema: {
         type: "object",
         properties: {
@@ -453,7 +455,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "upsert_stack",
-      description: "Create or update a stack configuration combining multiple services.",
+      description: "Create or update web-service-config.json on disk at cwd with a multi-service stack. Use for orchestrating two or more services. For a single service's own config, use generate_config instead.",
       inputSchema: {
         type: "object",
         properties: {
@@ -498,7 +500,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "remove_from_stack",
-      description: "Delete a service definition from a stack configuration.",
+      description: "Remove a service entry from web-service-config.json on disk at cwd. Reads and rewrites the file in place.",
       inputSchema: {
         type: "object",
         properties: {
@@ -647,6 +649,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           cwd: { type: "string", description: "Absolute path to the project directory" },
           router: { type: "string", description: "Target a specific router (PascalCase, e.g. Message). Omit to target all routers." },
           controller: { type: "string", description: "Target a specific controller (requires router). Omit to target all controllers in the router." },
+        },
+      },
+    },
+    {
+      name: "initialize_project_stack",
+      description: "Create a new stack project directory with package.json and an empty web-service-config.json. Use before calling upsert_stack to add services.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Stack directory name (kebab-case)" },
+          cwd: { type: "string", description: "Parent directory where the stack folder will be created (defaults to server CWD)" },
+          port: { type: "number", description: "Coordinator port for the stack (default 3000)" },
+        },
+        required: ["name"],
+      },
+    },
+    {
+      name: "list_project_services",
+      description: "Read web-service-config.json and return its services as a flat array. Easier than read_config when you only need the service list.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          cwd: { type: "string", description: "Directory containing web-service-config.json (defaults to server CWD)" },
         },
       },
     },
@@ -1046,6 +1071,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           : "No files needed patching.";
         return {
           content: [{ type: "text", text: msg }],
+        };
+      }
+      case "initialize_project_stack": {
+        const result = await initializeProjectStack({
+          name: args?.name as string,
+          cwd: (args?.cwd as string) ?? cwd,
+          port: args?.port as number | undefined,
+        });
+        return {
+          content: [{ type: "text", text: `Initialized stack at ${result.stackPath}. Config: ${result.configPath}` }],
+        };
+      }
+      case "list_project_services": {
+        const result = await listProjectServices({
+          cwd: (args?.cwd as string) ?? cwd,
+        });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
         };
       }
       default:

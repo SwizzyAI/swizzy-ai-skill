@@ -142,7 +142,7 @@ describe("AI Skill E2E Workflow", () => {
     assert.equal(stateRes.result.isError, undefined);
 
     // 5. Verify Propagation
-    const ctrlSrc = fs.readFileSync(path.join(projectDir, "src/routers/CoreRouter/controllers/edit-controller.ts"), "utf-8");
+    const ctrlSrc = fs.readFileSync(path.join(projectDir, "src/routers/CoreRouter/controllers/update-controller.ts"), "utf-8");
     assert.ok(ctrlSrc.includes("lastUpdate: number;"));
     assert.ok(fs.readFileSync(path.join(projectDir, "src/app.ts"), "utf-8").includes("lastUpdate: Date.now()"));
 
@@ -154,6 +154,6 @@ describe("AI Skill E2E Workflow", () => {
       cwd: projectDir
     });
     assert.equal(paramRes.result.isError, undefined);
-    assert.ok(fs.readFileSync(path.join(projectDir, "src/routers/CoreRouter/controllers/edit-controller.ts"), "utf-8").includes("metadata: object;"));
+    assert.ok(fs.readFileSync(path.join(projectDir, "src/routers/CoreRouter/controllers/update-controller.ts"), "utf-8").includes("metadata: object;"));
   });
 });
