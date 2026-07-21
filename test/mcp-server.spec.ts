@@ -229,6 +229,8 @@ describe("MCP server — tools/list", () => {
       "request",
       "view_logs",
       "add_jsdoc",
+      "initialize_project_stack",
+      "list_project_services",
     ];
 
     for (const name of expected) {
