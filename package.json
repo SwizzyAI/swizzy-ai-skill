@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0",
-    "@swizzyai/swizzy-web-service-cli": "^0.1.17"
+    "@swizzyai/swizzy-web-service-cli": "^0.1.20"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
