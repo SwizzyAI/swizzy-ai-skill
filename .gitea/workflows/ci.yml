@@ -1,0 +1,59 @@
+name: CI
+
+# Build/test always runs, unconditionally — install/build/unit-test gives
+# fast feedback on every push and has no side effects, no reason to gate it.
+# It's inlined as plain npm commands rather than going through
+# swizzy-ci-toolkit specifically so it works standalone before that
+# package has ever been published anywhere.
+#
+# Publish + containerize (npm publish, docker build/push, and triggering
+# wuvable-cdk's dev-deploy) are real side effects, so that job stays gated
+# behind the ORG-level Actions variable PIPELINE_ENABLED ("true"/unset —
+# Wuvabli org, set once, not per repo) AND only runs on master, never on
+# feature branches. See wuvable-cdk/scripts/setup-gitea-org.ts to set
+# PIPELINE_ENABLED (and everything else that job needs) via the Gitea API
+# instead of the web UI.
+on: [push]
+
+jobs:
+  build-test:
+    runs-on: host
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run build
+      - run: npm test --if-present
+
+  publish-and-containerize:
+    needs: build-test
+    if: vars.PIPELINE_ENABLED == 'true' && gitea.ref == 'refs/heads/master'
+    runs-on: host
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish to npm registry
+        run: npx --registry ${{ vars.NPM_REGISTRY_URL }} @swizzyweb/swizzy-ci-toolkit publish --registry ${{ vars.NPM_REGISTRY_URL }}
+
+      - name: ECR login
+        if: hashFiles('Dockerfile') != ''
+        run: aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY_HOST }}
+
+      - name: Build and push Docker image
+        run: >
+          npx --registry ${{ vars.NPM_REGISTRY_URL }} @swizzyweb/swizzy-ci-toolkit docker-build-push
+          --ecr-repo wuvable/ai-skill
+          --registry-host ${{ vars.ECR_REGISTRY_HOST }}
+          --git-sha ${{ gitea.sha }}
+
+      # Fans this repo's publish into wuvable-cdk's ephemeral dev-deploy +
+      # integration-test cycle. Requires the GITEA_DISPATCH_TOKEN secret and
+      # GITEA_URL variable to be configured (org-level, once) — soft-fails
+      # until then so it never blocks this repo's own CI.
+      - name: Trigger wuvable-cdk dev deploy
+        continue-on-error: true
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: token ${{ secrets.GITEA_DISPATCH_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"ref":"master"}' \
+            "${{ vars.GITEA_URL }}/api/v1/repos/Wuvabli/wuvable-cdk/actions/workflows/deploy.yml/dispatches"
