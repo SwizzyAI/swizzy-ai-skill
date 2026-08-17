@@ -34,6 +34,19 @@ jobs:
       - name: Publish to npm registry
         run: npx --registry ${{ vars.NPM_REGISTRY_URL }} @swizzyweb/swizzy-ci-toolkit publish --registry ${{ vars.NPM_REGISTRY_URL }}
 
+      # Generates API docs (typedoc, only if this repo has a "docs" script)
+      # and force-pushes them to this repo's Gitea wiki. Reuses
+      # GITEA_DISPATCH_TOKEN rather than a new secret — it already has
+      # write access to this repo for the dev-deploy dispatch below; if
+      # that scope ever proves insufficient for wiki pushes, swap in a
+      # dedicated GITEA_WIKI_TOKEN secret instead.
+      - name: Generate and publish docs to Gitea wiki
+        run: >
+          npx --registry ${{ vars.NPM_REGISTRY_URL }} @swizzyweb/swizzy-ci-toolkit generate-docs
+          --wiki-repo ${{ gitea.server_url }}/${{ gitea.repository }}.wiki.git
+          --token ${{ secrets.GITEA_DISPATCH_TOKEN }}
+          --git-sha ${{ gitea.sha }}
+
       - name: ECR login
         if: hashFiles('Dockerfile') != ''
         run: aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY_HOST }}

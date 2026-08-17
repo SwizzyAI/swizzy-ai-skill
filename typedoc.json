@@ -1,0 +1,16 @@
+{
+  "entryPoints": [
+    "src"
+  ],
+  "entryPointStrategy": "expand",
+  "out": "docs-site",
+  "excludePrivate": true,
+  "excludeExternals": true,
+  "readme": "none",
+  "plugin": [
+    "typedoc-plugin-markdown"
+  ],
+  "entryFileName": "Home.md",
+  "flattenOutputFiles": true,
+  "hidePageHeader": true
+}

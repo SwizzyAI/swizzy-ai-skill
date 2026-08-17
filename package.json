@@ -1,6 +1,6 @@
 {
   "name": "@swizzyai/swizzy-ai-skill",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "AI Agent tool for working with swizzy web ecosystem.",
   "keywords": [
     "AI",
@@ -30,7 +30,8 @@
     "build": "tsc",
     "test": "tsc -p tsconfig.test.json && node --test ./dist/test/**/*.spec.js",
     "coverage": "tsc -p tsconfig.test.json && node --test --experimental-test-coverage ./dist/test/**/*.spec.js",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test",
+    "docs": "typedoc"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0",
@@ -38,6 +39,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-markdown": "^4.12.0",
     "typescript": "^5.8.3"
   },
   "engines": {
