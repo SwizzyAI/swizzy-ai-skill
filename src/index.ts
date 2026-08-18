@@ -165,6 +165,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
               properties: {
                 name: { type: "string" },
                 type: { type: "string" },
+                optional: { type: "boolean", description: "When true, the generated validation middleware doesn't require this field to be present — only type-checks it if it is. Defaults to false (required)." },
               },
               required: ["name", "type"],
             },
@@ -176,6 +177,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
               properties: {
                 name: { type: "string" },
                 type: { type: "string" },
+                optional: { type: "boolean", description: "When true, the generated validation middleware doesn't require this param to be present — only type-checks it if it is. Defaults to false (required)." },
               },
               required: ["name", "type"],
             },
@@ -566,6 +568,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
               properties: {
                 name: { type: "string" },
                 type: { type: "string" },
+                optional: { type: "boolean", description: "When true, the generated validation middleware doesn't require this field to be present — only type-checks it if it is. Defaults to false (required)." },
               },
               required: ["name", "type"],
             },
@@ -577,6 +580,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
               properties: {
                 name: { type: "string" },
                 type: { type: "string" },
+                optional: { type: "boolean", description: "When true, the generated validation middleware doesn't require this param to be present — only type-checks it if it is. Defaults to false (required)." },
               },
               required: ["name", "type"],
             },
