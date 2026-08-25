@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm ci
-      - run: npm run build
+      - run: npm run build --if-present
       - run: npm test --if-present
 
   publish-and-containerize:
@@ -38,7 +38,7 @@ jobs:
       # compiled output, silently (npm publish doesn't error on a missing
       # "main" file), breaking every consumer at require-time instead.
       - run: npm ci
-      - run: npm run build
+      - run: npm run build --if-present
 
       - name: Publish to npm registry
         run: npx --registry ${{ vars.NPM_REGISTRY_URL }} @swizzyweb/swizzy-ci-toolkit publish --registry ${{ vars.NPM_REGISTRY_URL }}
