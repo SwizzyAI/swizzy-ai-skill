@@ -36,7 +36,7 @@ jobs:
 
       # Generates API docs (typedoc, only if this repo has a "docs" script)
       # and force-pushes them to this repo's Gitea wiki. Reuses
-      # GITEA_DISPATCH_TOKEN rather than a new secret — it already has
+      # WUVABLE_DISPATCH_TOKEN rather than a new secret — it already has
       # write access to this repo for the dev-deploy dispatch below; if
       # that scope ever proves insufficient for wiki pushes, swap in a
       # dedicated GITEA_WIKI_TOKEN secret instead.
@@ -44,7 +44,7 @@ jobs:
         run: >
           npx --registry ${{ vars.NPM_REGISTRY_URL }} @swizzyweb/swizzy-ci-toolkit generate-docs
           --wiki-repo ${{ gitea.server_url }}/${{ gitea.repository }}.wiki.git
-          --token ${{ secrets.GITEA_DISPATCH_TOKEN }}
+          --token ${{ secrets.WUVABLE_DISPATCH_TOKEN }}
           --git-sha ${{ gitea.sha }}
 
       - name: ECR login
@@ -59,14 +59,14 @@ jobs:
           --git-sha ${{ gitea.sha }}
 
       # Fans this repo's publish into wuvable-cdk's ephemeral dev-deploy +
-      # integration-test cycle. Requires the GITEA_DISPATCH_TOKEN secret and
-      # GITEA_URL variable to be configured (org-level, once) — soft-fails
+      # integration-test cycle. Requires the WUVABLE_DISPATCH_TOKEN secret and
+      # WUVABLE_GITEA_URL variable to be configured (org-level, once) — soft-fails
       # until then so it never blocks this repo's own CI.
       - name: Trigger wuvable-cdk dev deploy
         continue-on-error: true
         run: |
           curl -sf -X POST \
-            -H "Authorization: token ${{ secrets.GITEA_DISPATCH_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.WUVABLE_DISPATCH_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{"ref":"master"}' \
-            "${{ vars.GITEA_URL }}/api/v1/repos/Wuvabli/wuvable-cdk/actions/workflows/deploy.yml/dispatches"
+            "${{ vars.WUVABLE_GITEA_URL }}/api/v1/repos/Wuvabli/wuvable-cdk/actions/workflows/deploy.yml/dispatches"
