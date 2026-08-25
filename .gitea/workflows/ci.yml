@@ -31,6 +31,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # This job checks out fresh and does NOT inherit build-test's build
+      # output (separate Gitea Actions jobs don't share a filesystem) - without
+      # this, npm publish packed only source/test files with no dist/ at all,
+      # confirmed live: every published package on Verdaccio was missing its
+      # compiled output, silently (npm publish doesn't error on a missing
+      # "main" file), breaking every consumer at require-time instead.
+      - run: npm ci
+      - run: npm run build
+
       - name: Publish to npm registry
         run: npx --registry ${{ vars.NPM_REGISTRY_URL }} @swizzyweb/swizzy-ci-toolkit publish --registry ${{ vars.NPM_REGISTRY_URL }}
 
