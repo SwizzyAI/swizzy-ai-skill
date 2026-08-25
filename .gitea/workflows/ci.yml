@@ -20,7 +20,7 @@ jobs:
     runs-on: host
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci --omit=optional
+      - run: timeout 180 npm ci
       - run: npm run build --if-present
       - run: npm test --if-present
 
@@ -37,7 +37,7 @@ jobs:
       # confirmed live: every published package on Verdaccio was missing its
       # compiled output, silently (npm publish doesn't error on a missing
       # "main" file), breaking every consumer at require-time instead.
-      - run: npm ci --omit=optional
+      - run: timeout 180 npm ci
       - run: npm run build --if-present
 
       - name: Publish to npm registry
