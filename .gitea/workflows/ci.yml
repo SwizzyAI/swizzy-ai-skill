@@ -41,7 +41,7 @@ jobs:
       - run: npm run build --if-present
 
       - name: Publish to npm registry
-        run: npx --registry ${{ vars.NPM_REGISTRY_URL }} @swizzyweb/swizzy-ci-toolkit publish --registry ${{ vars.NPM_REGISTRY_URL }}
+        run: npx --registry ${{ vars.NPM_REGISTRY_URL }} @swizzyweb/swizzy-ci-toolkit publish --registry ${{ vars.NPM_REGISTRY_URL }} --git-sha ${{ gitea.sha }}
 
       # Generates API docs (typedoc, only if this repo has a "docs" script)
       # and force-pushes them to this repo's Gitea wiki. Reuses
