@@ -77,5 +77,5 @@ jobs:
           curl -sf -X POST \
             -H "Authorization: token ${{ secrets.WUVABLE_DISPATCH_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d '{"ref":"master"}' \
+            -d '{"ref":"master","inputs":{"source_repo":"${{ gitea.repository }}"}}' \
             "${{ vars.WUVABLE_GITEA_URL }}/api/v1/repos/Wuvabli/wuvable-cdk/actions/workflows/deploy.yml/dispatches"
